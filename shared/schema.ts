@@ -54,8 +54,22 @@ export const noteSchema = z.object({
   updatedAt: z.string(),
 });
 
+export const learningFormatSchema = z.enum(["visual", "audio"]);
+
+export const studentInteractionSchema = z.object({
+  id: z.string(),
+  sectionId: z.union([z.string(), z.number()]),
+  formatUsed: learningFormatSchema,
+  timeSpentMs: z.number().int().nonnegative(),
+  quizScore: z.number().min(0).max(1).nullable(),
+  completed: z.boolean(),
+  interactedAt: z.string(),
+});
+
 export type Annotation = z.infer<typeof annotationSchema>;
 export type AnnotationType = z.infer<typeof annotationTypeSchema>;
 export type HighlightColor = z.infer<typeof highlightColorSchema>;
 export type Bookmark = z.infer<typeof bookmarkSchema>;
 export type Note = z.infer<typeof noteSchema>;
+export type LearningFormat = z.infer<typeof learningFormatSchema>;
+export type StudentInteraction = z.infer<typeof studentInteractionSchema>;

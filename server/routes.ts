@@ -1,11 +1,142 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { annotationSchema, bookmarkSchema } from "@shared/schema";
+import { annotationSchema, bookmarkSchema, learningFormatSchema, studentInteractionSchema } from "@shared/schema";
 import { z } from "zod";
 import { Readable } from "stream";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const analyzeLearningRequestSchema = z.object({
+    sectionId: z.union([z.string(), z.number()]),
+    sectionTitle: z.string().optional(),
+    sectionContent: z.string().min(1, "Section content is required"),
+    contentMetadata: z.object({
+      complexity: z.enum(["abstract", "conceptual", "concrete", "factual"]).optional(),
+      contentType: z.enum(["procedural", "spatial", "mathematical", "narrative", "expository", "mixed"]).optional(),
+      keywords: z.array(z.string()).max(12).optional(),
+      length: z.number().int().positive().optional(),
+      readingLevel: z.enum(["elementary", "middle", "high", "college", "professional"]).optional(),
+    }).partial().optional(),
+    studentHistory: z.array(
+      studentInteractionSchema.omit({
+        id: true,
+        interactedAt: true,
+      }).extend({
+        interactedAt: z.string().optional(),
+      })
+    ).optional(),
+  });
+
+  async function callNemotronAnalysis(model: string, payload: unknown, apiKey: string) {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "X-Title": "Torka Adaptive Reader",
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        max_tokens: 512,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: [
+              {
+                type: "text",
+                text: [
+                  "You are an adaptive learning analyst assisting an educational reading platform.",
+                  "Analyze the provided content and student interaction history to determine whether a visual or audio format best fits the concept being learned.",
+                  "Base the recommendation on the concept and metadata: choose visual when diagrams or spatial reasoning aid comprehension; choose audio when narrative pacing or spoken explanation is more effective.",
+                  "Return a JSON object with keys format, reasoning, confidence.",
+                  "format must be exactly one of: visual or audio. Never list multiple formats or ranges.",
+                  "reasoning must be concise under 200 characters.",
+                  "confidence must be a float between 0 and 1.",
+                ].join(" "),
+              },
+            ],
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(payload),
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Nemotron request failed (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const rawContent: string | undefined = data?.choices?.[0]?.message?.content;
+    if (!rawContent) {
+      throw new Error("Nemotron response missing content");
+    }
+
+    return rawContent;
+  }
+
+  function parseNemotronResponse(content: string) {
+    const trimmed = content.trim().replace(/^```json\s*/i, "").replace(/```$/, "");
+    const parsed = JSON.parse(trimmed);
+    const result = z.object({
+      format: learningFormatSchema,
+      reasoning: z.string(),
+      confidence: z.number().min(0).max(1),
+    }).parse(parsed);
+    return result;
+  }
+
+  const interactionInputSchema = studentInteractionSchema.omit({
+    id: true,
+    interactedAt: true,
+  }).extend({
+    interactedAt: z.string().optional(),
+  });
+
+  app.post("/api/interactions", async (req, res) => {
+    try {
+      const interaction = interactionInputSchema.parse(req.body);
+      const stored = await storage.recordInteraction(interaction);
+      res.json(stored);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to record interaction" });
+      }
+    }
+  });
+
+  app.get("/api/interactions", async (_req, res) => {
+    try {
+      const interactions = await storage.getInteractions();
+      res.json(interactions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch interactions" });
+    }
+  });
+
+  app.get("/api/interactions/:sectionId", async (req, res) => {
+    try {
+      const { sectionId } = req.params;
+      const normalizedId = Number.isNaN(Number(sectionId)) ? sectionId : Number(sectionId);
+      const interactions = await storage.getInteractionsBySection(normalizedId);
+      res.json(interactions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch interactions" });
+    }
+  });
+
   // Annotations
   app.get("/api/annotations", async (req, res) => {
     try {
@@ -238,6 +369,73 @@ ${text}`;
     } catch (error) {
       console.error("Text-to-speech error:", error);
       res.status(500).json({ error: "Failed to generate speech" });
+    }
+  });
+
+  app.post("/api/analyze-learning-format", async (req, res) => {
+    try {
+      const parsed = analyzeLearningRequestSchema.parse(req.body);
+
+      const apiKey = process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "OpenRouter API key not configured" });
+      }
+
+      const preferredModel = process.env.OPENROUTER_MODEL ?? "nvidia/llama-3.1-nemotron-70b-instruct";
+      const fallbackModel = process.env.OPENROUTER_FALLBACK_MODEL ?? "nvidia/nemotron-4-340b-instruct";
+
+      const storedHistory = await storage.getInteractionsBySection(parsed.sectionId);
+      const combinedHistory = [
+        ...(parsed.studentHistory ?? []),
+        ...storedHistory.map(({ id: _id, ...rest }) => rest),
+      ];
+
+      const promptPayload = {
+        task: "Recommend optimal learning format",
+        section: {
+          id: parsed.sectionId,
+          title: parsed.sectionTitle,
+          content: parsed.sectionContent,
+          metadata: parsed.contentMetadata,
+        },
+        studentHistory: combinedHistory,
+        guidance: {
+          formatOptions: learningFormatSchema.options,
+          considerations: [
+            "Match instructional format to content complexity and type",
+            "Account for student performance signals and preferences",
+            "Balance novelty with consistency when confidence is low",
+          ],
+        },
+      };
+
+      let responseContent: string | undefined;
+      let attemptModel = preferredModel;
+      try {
+        responseContent = await callNemotronAnalysis(attemptModel, promptPayload, apiKey);
+      } catch (error) {
+        if (fallbackModel && fallbackModel !== preferredModel) {
+          attemptModel = fallbackModel;
+          responseContent = await callNemotronAnalysis(attemptModel, promptPayload, apiKey);
+        } else {
+          throw error;
+        }
+      }
+
+      const parsedResponse = parseNemotronResponse(responseContent);
+      res.json({
+        ...parsedResponse,
+        model: attemptModel,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else if (error instanceof Error) {
+        console.error("Analyze learning format error:", error.message);
+        res.status(502).json({ error: "Failed to analyze learning format" });
+      } else {
+        res.status(500).json({ error: "Unknown error" });
+      }
     }
   });
 

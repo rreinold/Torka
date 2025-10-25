@@ -15,6 +15,7 @@ export default function TextViewerExample() {
           zoom={100}
           searchQuery=""
           onPageChange={setCurrentPage}
+          activeSectionId={sampleDocument.sections[currentPage - 1]?.id ?? 0}
         />
       </div>
     </ThemeProvider>
