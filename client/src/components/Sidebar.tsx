@@ -1,10 +1,21 @@
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Highlighter, BookOpen, StickyNote, Bookmark, List, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Highlighter, BookOpen, StickyNote, Bookmark, List, Trash2, Plus } from "lucide-react";
 import type { Annotation, Bookmark as BookmarkType, Note } from "@shared/schema";
 
 interface SidebarProps {
@@ -30,6 +41,36 @@ export function Sidebar({
   onBookmarkAdd,
   onNoteUpdate,
 }: SidebarProps) {
+  const [bookmarkLabel, setBookmarkLabel] = useState("");
+  const [bookmarkPage, setBookmarkPage] = useState(1);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleAddBookmark = () => {
+    if (bookmarkLabel.trim()) {
+      onBookmarkAdd(bookmarkLabel, bookmarkPage);
+      setBookmarkLabel("");
+      setBookmarkPage(1);
+      setIsDialogOpen(false);
+    }
+  };
+
+  const getColorClass = (color?: string) => {
+    switch (color) {
+      case "yellow":
+        return "bg-yellow-300";
+      case "green":
+        return "bg-green-300";
+      case "blue":
+        return "bg-blue-300";
+      case "pink":
+        return "bg-pink-300";
+      case "orange":
+        return "bg-orange-300";
+      default:
+        return "bg-gray-300";
+    }
+  };
+
   return (
     <div className="w-80 border-l bg-background flex flex-col" data-testid="sidebar">
       <Tabs defaultValue="annotations" className="flex-1 flex flex-col">
@@ -62,7 +103,7 @@ export function Sidebar({
             <div className="p-4 space-y-3">
               {annotations.length === 0 ? (
                 <div className="text-center text-sm text-muted-foreground py-8">
-                  No annotations yet. Start by selecting text and using the annotation tools.
+                  No annotations yet. Start by enabling annotation mode and selecting text.
                 </div>
               ) : (
                 annotations.map((annotation) => (
@@ -103,7 +144,7 @@ export function Sidebar({
                       </span>
                       {annotation.color && (
                         <div
-                          className={`w-4 h-4 rounded-sm bg-${annotation.color}-300`}
+                          className={`w-4 h-4 rounded-sm ${getColorClass(annotation.color)}`}
                         />
                       )}
                     </div>
@@ -115,6 +156,55 @@ export function Sidebar({
         </TabsContent>
 
         <TabsContent value="bookmarks" className="flex-1 m-0">
+          <div className="p-4 border-b">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full" data-testid="button-add-bookmark">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Bookmark
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create Bookmark</DialogTitle>
+                  <DialogDescription>
+                    Add a bookmark to quickly navigate to important sections.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="bookmark-label">Label</Label>
+                    <Input
+                      id="bookmark-label"
+                      placeholder="e.g., Important concept"
+                      value={bookmarkLabel}
+                      onChange={(e) => setBookmarkLabel(e.target.value)}
+                      data-testid="input-bookmark-label"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bookmark-page">Page Number</Label>
+                    <Input
+                      id="bookmark-page"
+                      type="number"
+                      min={1}
+                      value={bookmarkPage}
+                      onChange={(e) => setBookmarkPage(parseInt(e.target.value) || 1)}
+                      data-testid="input-bookmark-page"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    onClick={handleAddBookmark}
+                    data-testid="button-save-bookmark"
+                  >
+                    Save Bookmark
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
           <ScrollArea className="h-full">
             <div className="p-4 space-y-3">
               {bookmarks.length === 0 ? (
@@ -172,18 +262,21 @@ export function Sidebar({
               <div
                 className="rounded-md p-3 hover-elevate cursor-pointer"
                 data-testid="outline-section-1"
+                onClick={() => onAnnotationClick({ pageNumber: 1 } as Annotation)}
               >
                 <p className="text-sm font-medium">1. Understanding Torque</p>
               </div>
               <div
                 className="rounded-md p-3 hover-elevate cursor-pointer"
                 data-testid="outline-section-2"
+                onClick={() => onAnnotationClick({ pageNumber: 2 } as Annotation)}
               >
                 <p className="text-sm font-medium">2. Applications and Examples</p>
               </div>
               <div
                 className="rounded-md p-3 hover-elevate cursor-pointer"
                 data-testid="outline-section-3"
+                onClick={() => onAnnotationClick({ pageNumber: 3 } as Annotation)}
               >
                 <p className="text-sm font-medium">3. Measuring and Controlling Torque</p>
               </div>
