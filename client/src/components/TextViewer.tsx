@@ -27,7 +27,7 @@ interface TextViewerProps {
   searchQuery?: string;
   currentSearchResult?: number;
   annotations?: Annotation[];
-  mediaItems?: Map<number, { type: "image" | "audio" }>;
+  mediaItems?: Map<number, { type: "image" | "audio"; audioUrl?: string }>;
   quiz?: Quiz;
   onPageChange: (page: number) => void;
   onSearchMatchesFound?: (matches: SearchMatch[]) => void;
@@ -309,13 +309,30 @@ export function TextViewer({
                     <p className="text-sm text-muted-foreground">Image Placeholder</p>
                   </div>
                 </div>
+              ) : mediaItems.get(0)?.audioUrl ? (
+                <div className="w-full bg-muted rounded-lg p-6 border-2">
+                  <div className="flex flex-col items-center gap-4">
+                    <svg className="w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414c-.781-.781-.781-2.047 0-2.828l1.414-1.414a2 2 0 012.828 0l4.95 4.95a2 2 0 010 2.828l-1.414 1.414a2 2 0 01-2.828 0l-4.95-4.95z" />
+                    </svg>
+                    <p className="text-sm font-semibold text-foreground">Audio Narration</p>
+                    <audio
+                      controls
+                      src={mediaItems.get(0)?.audioUrl}
+                      className="w-full max-w-md"
+                      data-testid="audio-player"
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                </div>
               ) : (
                 <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
                   <div className="text-center">
                     <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414c-.781-.781-.781-2.047 0-2.828l1.414-1.414a2 2 0 012.828 0l4.95 4.95a2 2 0 010 2.828l-1.414 1.414a2 2 0 01-2.828 0l-4.95-4.95z" />
                     </svg>
-                    <p className="text-sm text-muted-foreground">Audio Placeholder</p>
+                    <p className="text-sm text-muted-foreground">Generating Audio...</p>
                   </div>
                 </div>
               )}

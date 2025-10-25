@@ -30,7 +30,7 @@ export default function Reader() {
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeTool, setActiveTool] = useState<AnnotationType | null>(null);
   const [activeColor, setActiveColor] = useState<HighlightColor>("yellow");
-  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio" }>>(new Map());
+  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio"; audioUrl?: string }>>(new Map());
 
   const totalPages = sampleDocument.sections.length;
   const totalSearchResults = searchMatches.length;
@@ -198,14 +198,61 @@ export default function Reader() {
     setCurrentSearchResult(0);
   };
 
-  const handleMediaAdd = (sectionId: number, type: "image" | "audio") => {
+  const handleMediaAdd = async (sectionId: number, type: "image" | "audio") => {
     const newMap = new Map(mediaItems);
     newMap.set(sectionId, { type });
     setMediaItems(newMap);
-    toast({
-      title: `${type === "image" ? "Image" : "Audio"} added`,
-      description: `A ${type} placeholder has been added to the section.`,
-    });
+
+    if (type === "audio") {
+      // Generate audio using ElevenLabs
+      try {
+        const fullText = sampleDocument.sections
+          .map((section) => `${section.title}. ${section.content}`)
+          .join(" ");
+
+        toast({
+          title: "Generating audio...",
+          description: "Please wait while we generate the audio narration.",
+        });
+
+        const response = await fetch("/api/text-to-speech", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: fullText }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate audio");
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Store the audio URL with the media item
+        const mapWithAudio = new Map(newMap);
+        mapWithAudio.set(sectionId, { type, audioUrl });
+        setMediaItems(mapWithAudio);
+
+        toast({
+          title: "Audio generated",
+          description: "Your audio narration is ready to play.",
+        });
+      } catch (error) {
+        console.error("Audio generation error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate audio. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Image added",
+        description: "An image placeholder has been added.",
+      });
+    }
   };
 
   const handleMediaRemove = (sectionId: number) => {
