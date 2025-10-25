@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }]
           }],
           generationConfig: {
-            responseModalities: ["IMAGE"]
+            responseModalities: ["TEXT", "IMAGE"]
           }
         }),
       });
