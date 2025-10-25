@@ -27,7 +27,7 @@ interface TextViewerProps {
   searchQuery?: string;
   currentSearchResult?: number;
   annotations?: Annotation[];
-  mediaItems?: Map<number, { type: "image" | "audio"; audioUrl?: string }>;
+  mediaItems?: Map<number, { type: "image" | "audio"; audioUrl?: string; imageUrl?: string }>;
   quiz?: Quiz;
   onPageChange: (page: number) => void;
   onSearchMatchesFound?: (matches: SearchMatch[]) => void;
@@ -301,14 +301,28 @@ export function TextViewer({
           {mediaItems?.has(0) ? (
             <div className="flex flex-col items-center gap-4">
               {mediaItems.get(0)?.type === "image" ? (
-                <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                  <div className="text-center">
-                    <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="text-sm text-muted-foreground">Image Placeholder</p>
+                mediaItems.get(0)?.imageUrl ? (
+                  <div className="w-full bg-muted rounded-lg p-4 border-2">
+                    <div className="flex flex-col items-center gap-4">
+                      <p className="text-sm font-semibold text-foreground">AI-Generated Image</p>
+                      <img
+                        src={mediaItems.get(0)?.imageUrl}
+                        alt="AI-generated representation of the content"
+                        className="w-full max-w-2xl rounded-lg"
+                        data-testid="generated-image"
+                      />
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
+                    <div className="text-center">
+                      <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-sm text-muted-foreground">Generating Image...</p>
+                    </div>
+                  </div>
+                )
               ) : mediaItems.get(0)?.audioUrl ? (
                 <div className="w-full bg-muted rounded-lg p-6 border-2">
                   <div className="flex flex-col items-center gap-4">
