@@ -25,13 +25,6 @@ import {
   PolarGrid, 
   PolarAngleAxis, 
   PolarRadiusAxis,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
   ResponsiveContainer
 } from "recharts";
 
@@ -41,13 +34,6 @@ const learningStyleData = [
   { subject: 'Auditory', value: 60, fullMark: 100 },
   { subject: 'Reading/Writing', value: 70, fullMark: 100 },
   { subject: 'Hands-On', value: 45, fullMark: 100 },
-];
-
-const comprehensionSpeedData = [
-  { session: 'Week 1', videos: 65, diagrams: 80, audio: 55, text: 70, interactive: 75 },
-  { session: 'Week 2', videos: 70, diagrams: 85, audio: 60, text: 72, interactive: 80 },
-  { session: 'Week 3', videos: 75, diagrams: 88, audio: 65, text: 75, interactive: 82 },
-  { session: 'Week 4', videos: 78, diagrams: 92, audio: 68, text: 78, interactive: 85 },
 ];
 
 export default function Landing() {
@@ -186,7 +172,7 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="max-w-2xl mx-auto">
             {/* Learning Style Overview */}
             <Card data-testid="card-preview-learning-style">
               <CardHeader>
@@ -216,32 +202,6 @@ export default function Landing() {
                     Visual Learner (85%)
                   </Badge>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Comprehension Speed */}
-            <Card data-testid="card-preview-comprehension">
-              <CardHeader>
-                <CardTitle>Comprehension Speed by Media Type</CardTitle>
-                <CardDescription>
-                  Track how quickly you grasp concepts with different formats
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={comprehensionSpeedData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="session" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="diagrams" stroke="#10b981" strokeWidth={2} name="Diagrams" />
-                    <Line type="monotone" dataKey="interactive" stroke="#3b82f6" strokeWidth={2} name="Interactive" />
-                    <Line type="monotone" dataKey="videos" stroke="#f59e0b" strokeWidth={2} name="Videos" />
-                    <Line type="monotone" dataKey="text" stroke="#8b5cf6" strokeWidth={2} name="Text" />
-                    <Line type="monotone" dataKey="audio" stroke="#ec4899" strokeWidth={2} name="Audio" />
-                  </LineChart>
-                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
