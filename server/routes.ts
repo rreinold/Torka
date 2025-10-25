@@ -108,6 +108,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Text-to-image with Gemini
+  app.post("/api/text-to-image", async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text || typeof text !== "string") {
+        return res.status(400).json({ error: "Text is required" });
+      }
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "Gemini API key not configured" });
+      }
+
+      // Using Gemini's image generation model
+      const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent";
+
+      // Create a prompt that asks for an image representing the content
+      const prompt = `Create a detailed, photorealistic image that visually represents the following educational content: ${text}`;
+
+      const response = await fetch(`${url}?key=${apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            responseModalities: ["IMAGE"]
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error("Gemini API error:", error);
+        return res.status(response.status).json({ error: "Failed to generate image" });
+      }
+
+      const data = await response.json();
+      
+      // Extract the image data from the response
+      if (data.candidates && data.candidates[0]?.content?.parts) {
+        for (const part of data.candidates[0].content.parts) {
+          if (part.inlineData && part.inlineData.data) {
+            // Return the base64 image data
+            const imageBuffer = Buffer.from(part.inlineData.data, "base64");
+            res.setHeader("Content-Type", "image/png");
+            res.send(imageBuffer);
+            return;
+          }
+        }
+      }
+
+      res.status(500).json({ error: "No image data received" });
+    } catch (error) {
+      console.error("Text-to-image error:", error);
+      res.status(500).json({ error: "Failed to generate image" });
+    }
+  });
+
   // Text-to-speech with ElevenLabs
   app.post("/api/text-to-speech", async (req, res) => {
     try {
