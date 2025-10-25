@@ -27,11 +27,11 @@ interface TextViewerProps {
   searchQuery?: string;
   currentSearchResult?: number;
   annotations?: Annotation[];
-  mediaItems?: Map<number, { type: "image" | "video" }>;
+  mediaItems?: Map<number, { type: "image" | "audio" }>;
   quiz?: Quiz;
   onPageChange: (page: number) => void;
   onSearchMatchesFound?: (matches: SearchMatch[]) => void;
-  onMediaAdd?: (sectionId: number, type: "image" | "video") => void;
+  onMediaAdd?: (sectionId: number, type: "image" | "audio") => void;
   onMediaRemove?: (sectionId: number) => void;
 }
 
@@ -313,10 +313,9 @@ export function TextViewer({
                 <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
                   <div className="text-center">
                     <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414c-.781-.781-.781-2.047 0-2.828l1.414-1.414a2 2 0 012.828 0l4.95 4.95a2 2 0 010 2.828l-1.414 1.414a2 2 0 01-2.828 0l-4.95-4.95z" />
                     </svg>
-                    <p className="text-sm text-muted-foreground">Video Placeholder</p>
+                    <p className="text-sm text-muted-foreground">Audio Placeholder</p>
                   </div>
                 </div>
               )}
@@ -344,15 +343,14 @@ export function TextViewer({
                     Image
                   </button>
                   <button
-                    onClick={() => onMediaAdd?.(0, "video")}
+                    onClick={() => onMediaAdd?.(0, "audio")}
                     className="flex-1 py-2 px-4 border rounded-md hover-elevate active-elevate-2 text-sm bg-card"
-                    data-testid="button-add-video"
+                    data-testid="button-add-audio"
                   >
                     <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414c-.781-.781-.781-2.047 0-2.828l1.414-1.414a2 2 0 012.828 0l4.95 4.95a2 2 0 010 2.828l-1.414 1.414a2 2 0 01-2.828 0l-4.95-4.95z" />
                     </svg>
-                    Video
+                    Audio
                   </button>
                 </div>
               </div>

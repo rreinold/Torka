@@ -30,7 +30,7 @@ export default function Reader() {
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeTool, setActiveTool] = useState<AnnotationType | null>(null);
   const [activeColor, setActiveColor] = useState<HighlightColor>("yellow");
-  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "video" }>>(new Map());
+  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio" }>>(new Map());
 
   const totalPages = sampleDocument.sections.length;
   const totalSearchResults = searchMatches.length;
@@ -198,12 +198,12 @@ export default function Reader() {
     setCurrentSearchResult(0);
   };
 
-  const handleMediaAdd = (sectionId: number, type: "image" | "video") => {
+  const handleMediaAdd = (sectionId: number, type: "image" | "audio") => {
     const newMap = new Map(mediaItems);
     newMap.set(sectionId, { type });
     setMediaItems(newMap);
     toast({
-      title: `${type === "image" ? "Image" : "Video"} added`,
+      title: `${type === "image" ? "Image" : "Audio"} added`,
       description: `A ${type} placeholder has been added to the section.`,
     });
   };
