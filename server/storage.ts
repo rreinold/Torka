@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Annotation, type Bookmark, type Note } from "@shared/schema";
+import { type User, type InsertUser, type Annotation, type Bookmark, type Note, type StudentInteraction } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -19,6 +19,11 @@ export interface IStorage {
   // Notes
   getNotes(): Promise<Note[]>;
   updateNote(id: string, content: string): Promise<Note>;
+
+  // Student interactions
+  recordInteraction(interaction: Omit<StudentInteraction, 'id' | 'interactedAt'> & Partial<Pick<StudentInteraction, 'interactedAt'>>): Promise<StudentInteraction>;
+  getInteractions(): Promise<StudentInteraction[]>;
+  getInteractionsBySection(sectionId: string | number): Promise<StudentInteraction[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -26,12 +31,14 @@ export class MemStorage implements IStorage {
   private annotations: Map<string, Annotation>;
   private bookmarks: Map<string, Bookmark>;
   private notes: Map<string, Note>;
+  private interactions: Map<string, StudentInteraction>;
 
   constructor() {
     this.users = new Map();
     this.annotations = new Map();
     this.bookmarks = new Map();
     this.notes = new Map();
+    this.interactions = new Map();
     
     // Initialize with default note
     const defaultNote: Note = {
@@ -120,6 +127,25 @@ export class MemStorage implements IStorage {
     };
     this.notes.set(id, updatedNote);
     return updatedNote;
+  }
+
+  async recordInteraction(interaction: Omit<StudentInteraction, 'id' | 'interactedAt'> & Partial<Pick<StudentInteraction, 'interactedAt'>>): Promise<StudentInteraction> {
+    const id = randomUUID();
+    const stored: StudentInteraction = {
+      ...interaction,
+      id,
+      interactedAt: interaction.interactedAt ?? new Date().toISOString(),
+    };
+    this.interactions.set(id, stored);
+    return stored;
+  }
+
+  async getInteractions(): Promise<StudentInteraction[]> {
+    return Array.from(this.interactions.values()).sort((a, b) => a.interactedAt.localeCompare(b.interactedAt));
+  }
+
+  async getInteractionsBySection(sectionId: string | number): Promise<StudentInteraction[]> {
+    return (await this.getInteractions()).filter((interaction) => interaction.sectionId === sectionId);
   }
 }
 
