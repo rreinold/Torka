@@ -67,7 +67,7 @@ export default function Reader() {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(100);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAnnotateMode, setIsAnnotateMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
