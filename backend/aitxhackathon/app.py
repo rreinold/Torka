@@ -1,13 +1,25 @@
 from enum import Enum
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins in development
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 class MediaType(str, Enum):
     IMAGE = "IMAGE"
     AUDIO = "AUDIO"
+    VIDEO = "VIDEO"
+    SIMULATION = "SIMULATION"
 
 
 class SubmitRequest(BaseModel):
@@ -18,12 +30,16 @@ class SubmitRequest(BaseModel):
 # In-memory store for tracking statistics
 stats_store = {
     "correct": {
-        "IMAGE": 0,
-        "AUDIO": 0
+        "IMAGE": 10,
+        "AUDIO": 7,
+        "VIDEO": 0,
+        "SIMULATION": 0
     },
     "incorrect": {
-        "IMAGE": 0,
-        "AUDIO": 0
+        "IMAGE": 10,
+        "AUDIO": 7,
+        "VIDEO": 0,
+        "SIMULATION": 0
     }
 }
 
