@@ -206,9 +206,13 @@ export default function Reader() {
     if (type === "audio") {
       // Generate audio using ElevenLabs
       try {
-        const fullText = sampleDocument.sections
-          .map((section) => `${section.title}. ${section.content}`)
-          .join(" ");
+        // Get the last section's content
+        const lastSection = sampleDocument.sections[sampleDocument.sections.length - 1];
+        const lastSectionText = lastSection.content;
+        
+        // Extract the last sentence
+        const sentences = lastSectionText.match(/[^.!?]+[.!?]+/g) || [];
+        const lastSentence = sentences[sentences.length - 1]?.trim() || lastSectionText;
 
         toast({
           title: "Generating audio...",
@@ -220,7 +224,7 @@ export default function Reader() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: fullText }),
+          body: JSON.stringify({ text: lastSentence }),
         });
 
         if (!response.ok) {
