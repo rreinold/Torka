@@ -9,6 +9,7 @@ import { sampleDocument } from "@/lib/sampleText";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import * as api from "@/lib/api";
+import { TORQUE_TEXT } from "@/lib/constants";
 import type { Annotation, Bookmark, Note, AnnotationType, HighlightColor } from "@shared/schema";
 
 interface SearchMatch {
@@ -206,9 +207,6 @@ export default function Reader() {
     if (type === "audio") {
       // Generate audio using ElevenLabs
       try {
-        // Use presummarized torque text
-        const torqueText = "Torque (τ), or rotational force, depends on force magnitude and lever arm length (τ = F × r × sinθ). Longer wrenches amplify torque for easier nut loosening. In automotive, diesel engines offer high torque for towing, while electric vehicles provide instant acceleration via immediate torque from zero RPM. Industrial machinery uses precise torque control to prevent component damage. Tools like screwdrivers optimize mechanical advantage. Measurement occurs in N·m or lb·ft using torque wrenches. Aerospace demands exact torque for safety, while biomechanics studies it for prosthetics and movement analysis. Digital systems now automate torque application, reducing errors across engineering, manufacturing, and healthcare.";
-
         toast({
           title: "Generating audio...",
           description: "Please wait while we generate the audio narration.",
@@ -219,7 +217,7 @@ export default function Reader() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: torqueText }),
+          body: JSON.stringify({ text: TORQUE_TEXT }),
         });
 
         if (!response.ok) {
@@ -249,9 +247,6 @@ export default function Reader() {
     } else if (type === "image") {
       // Generate image using Gemini
       try {
-        // Use presummarized torque text
-        const torqueText = "Torque (τ), or rotational force, depends on force magnitude and lever arm length (τ = F × r × sinθ). Longer wrenches amplify torque for easier nut loosening. In automotive, diesel engines offer high torque for towing, while electric vehicles provide instant acceleration via immediate torque from zero RPM. Industrial machinery uses precise torque control to prevent component damage. Tools like screwdrivers optimize mechanical advantage. Measurement occurs in N·m or lb·ft using torque wrenches. Aerospace demands exact torque for safety, while biomechanics studies it for prosthetics and movement analysis. Digital systems now automate torque application, reducing errors across engineering, manufacturing, and healthcare.";
-
         toast({
           title: "Generating image...",
           description: "Please wait while we create an image representing your content.",
@@ -262,7 +257,7 @@ export default function Reader() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: torqueText }),
+          body: JSON.stringify({ text: TORQUE_TEXT }),
         });
 
         if (!response.ok) {
