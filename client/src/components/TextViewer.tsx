@@ -210,6 +210,12 @@ export function TextViewer({
     const media = mediaItems?.get(sectionId);
     const isRecommended = aiRecommendation?.sectionId === sectionId;
     const recommendedFormat = aiRecommendation?.format;
+    const recommendedFormatDisplay =
+      recommendedFormat === "multimodal"
+        ? "Image + Audio"
+        : recommendedFormat
+        ? `${recommendedFormat.charAt(0).toUpperCase()}${recommendedFormat.slice(1)}`
+        : null;
 
     return (
       <div className="mt-6 border rounded-lg p-4 bg-muted/50">
@@ -218,12 +224,12 @@ export function TextViewer({
             <p className="text-sm font-semibold text-foreground">Supplementary media</p>
             {isRecommended && aiRecommendation && (
               <p className="text-xs text-muted-foreground mt-1">
-                <span role="img" aria-label="AI">🤖</span> {aiRecommendation.reasoning} ({Math.round(aiRecommendation.confidence * 100)}% confidence)
+                <span role="img" aria-label="AI">🤖</span> AI found an alternative format to enhance this section.
               </p>
             )}
           </div>
           {isRecommended && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <span role="img" aria-label="AI">🤖</span>
               AI-recommended format
             </span>
@@ -250,11 +256,31 @@ export function TextViewer({
           </div>
         ) : (
           <div className="w-full bg-card rounded-lg border border-dashed p-6">
-            <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
+            <div className="flex flex-col gap-5 w-full max-w-md mx-auto">
+              {isRecommended && aiRecommendation && (
+                <div className="w-full rounded-xl border border-primary/20 bg-primary/5 p-4 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl">
+                      <span role="img" aria-label="AI">🤖</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                        AI recommendation
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        {recommendedFormatDisplay ? `${recommendedFormatDisplay} format suggested` : "Suggested format"}
+                      </p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {aiRecommendation.reasoning} ({Math.round(aiRecommendation.confidence * 100)}% confidence)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground text-center">
                 {isRecommended && aiRecommendation
-                  ? `AI recommends a ${aiRecommendation.format} format for this section. Choose how you'd like to explore it.`
-                  : "Choose your preferred media type for explanation"}
+                  ? "Try the recommended format below or pick the one that suits you best."
+                  : "Choose the media format that helps you understand this section."}
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
                 <button
