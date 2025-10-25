@@ -273,7 +273,7 @@ export function TextViewer({
           <div key={section.id}>
             <div
               ref={(el) => (sectionRefs.current[index] = el)}
-              className="mb-6"
+              className="mb-12"
               data-testid={`section-${section.id}`}
             >
               <h2 className="font-serif text-2xl font-semibold mb-6 text-foreground">
@@ -283,70 +283,70 @@ export function TextViewer({
                 {renderText(section.content, index)}
               </p>
             </div>
+          </div>
+        ))}
 
-            {/* Media section */}
-            <div className="mb-12 border rounded-lg p-4 bg-muted/50">
-              {mediaItems?.has(section.id) ? (
-                <div className="flex flex-col items-center gap-4">
-                  {mediaItems.get(section.id)?.type === "image" ? (
-                    <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                      <div className="text-center">
-                        <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p className="text-sm text-muted-foreground">Image Placeholder</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
-                      <div className="text-center">
-                        <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p className="text-sm text-muted-foreground">Video Placeholder</p>
-                      </div>
-                    </div>
-                  )}
-                  <button
-                    onClick={() => onMediaRemove?.(section.id)}
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                    data-testid={`button-remove-media-${section.id}`}
-                  >
-                    Remove media
-                  </button>
+        {/* Single Media section at the bottom */}
+        <div className="mt-8 border rounded-lg p-4 bg-muted/50">
+          {mediaItems?.has(0) ? (
+            <div className="flex flex-col items-center gap-4">
+              {mediaItems.get(0)?.type === "image" ? (
+                <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
+                  <div className="text-center">
+                    <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm text-muted-foreground">Image Placeholder</p>
+                  </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm text-muted-foreground mb-2">Choose your preferred media type for explanation</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => onMediaAdd?.(section.id, "image")}
-                      className="flex-1 py-2 px-4 border rounded-md hover-elevate active-elevate-2 text-sm"
-                      data-testid={`button-add-image-${section.id}`}
-                    >
-                      <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Image
-                    </button>
-                    <button
-                      onClick={() => onMediaAdd?.(section.id, "video")}
-                      className="flex-1 py-2 px-4 border rounded-md hover-elevate active-elevate-2 text-sm"
-                      data-testid={`button-add-video-${section.id}`}
-                    >
-                      <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Video
-                    </button>
+                <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
+                  <div className="text-center">
+                    <svg className="w-16 h-16 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-muted-foreground">Video Placeholder</p>
                   </div>
                 </div>
               )}
+              <button
+                onClick={() => onMediaRemove?.(0)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+                data-testid="button-remove-media"
+              >
+                Remove media
+              </button>
             </div>
-          </div>
-        ))}
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground mb-2">Choose your preferred media type for explanation</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onMediaAdd?.(0, "image")}
+                  className="flex-1 py-2 px-4 border rounded-md hover-elevate active-elevate-2 text-sm"
+                  data-testid="button-add-image"
+                >
+                  <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Image
+                </button>
+                <button
+                  onClick={() => onMediaAdd?.(0, "video")}
+                  className="flex-1 py-2 px-4 border rounded-md hover-elevate active-elevate-2 text-sm"
+                  data-testid="button-add-video"
+                >
+                  <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Video
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
