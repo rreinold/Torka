@@ -266,7 +266,7 @@ export function TextViewer({
       data-testid="text-viewer"
     >
       <div
-        className="max-w-4xl mx-auto bg-card rounded-lg shadow-sm p-8 md:p-12 lg:p-16 transition-transform duration-200"
+        className="max-w-4xl mx-auto bg-card rounded-lg shadow-sm p-8 md:p-12 lg:p-16 pb-96 transition-transform duration-200"
         style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
       >
         {sections.map((section, index) => (
