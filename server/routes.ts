@@ -48,9 +48,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 type: "text",
                 text: [
                   "You are an adaptive learning analyst assisting an educational reading platform.",
-                  "Analyze the provided content and student interaction history.",
+                  "Analyze the provided content and student interaction history to determine whether a visual or audio format best fits the concept being learned.",
+                  "Base the recommendation on the concept and metadata: choose visual when diagrams or spatial reasoning aid comprehension; choose audio when narrative pacing or spoken explanation is more effective.",
                   "Return a JSON object with keys format, reasoning, confidence.",
-                  "format must be one of: text, visual, audio, multimodal.",
+                  "format must be exactly one of: visual or audio. Never list multiple formats or ranges.",
                   "reasoning must be concise under 200 characters.",
                   "confidence must be a float between 0 and 1.",
                 ].join(" "),

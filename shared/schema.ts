@@ -54,7 +54,7 @@ export const noteSchema = z.object({
   updatedAt: z.string(),
 });
 
-export const learningFormatSchema = z.enum(["text", "visual", "audio", "multimodal"]);
+export const learningFormatSchema = z.enum(["visual", "audio"]);
 
 export const studentInteractionSchema = z.object({
   id: z.string(),

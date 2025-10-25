@@ -75,7 +75,7 @@ export default function Reader() {
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeTool, setActiveTool] = useState<AnnotationType | null>(null);
   const [activeColor, setActiveColor] = useState<HighlightColor>("yellow");
-  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio" | "multimodal"; audioUrl?: string; imageUrl?: string }>>(new Map());
+  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio"; audioUrl?: string; imageUrl?: string }>>(new Map());
   const [recommendations, setRecommendations] = useState<Map<number, { format: LearningFormat; reasoning: string; confidence: number; model: string }>>(new Map());
   const [formatUsage, setFormatUsage] = useState<Map<number, LearningFormat>>(new Map());
   const [quizScores, setQuizScores] = useState<Map<number, number | null>>(new Map());
@@ -88,7 +88,7 @@ export default function Reader() {
   const flushSectionInteractionRef = useRef<((sectionId: number, durationMs: number) => Promise<void>) | null>(null);
 
   const updateMediaItems = useCallback(
-    (sectionId: number, updater: (current?: { type: "image" | "audio" | "multimodal"; audioUrl?: string; imageUrl?: string }) => { type: "image" | "audio" | "multimodal"; audioUrl?: string; imageUrl?: string } | undefined) => {
+    (sectionId: number, updater: (current?: { type: "image" | "audio"; audioUrl?: string; imageUrl?: string }) => { type: "image" | "audio"; audioUrl?: string; imageUrl?: string } | undefined) => {
       setMediaItems((prev) => {
         const map = new Map(prev);
         const current = map.get(sectionId);
@@ -296,19 +296,19 @@ export default function Reader() {
     setCurrentSearchResult(0);
   }, []);
 
-  const handleMediaAdd = useCallback(async (sectionId: number, type: "image" | "audio" | "multimodal") => {
+  const handleMediaAdd = useCallback(async (sectionId: number, type: "image" | "audio") => {
     const section = sampleDocument.sections.find((s) => s.id === sectionId);
     if (!section) {
       return;
     }
+
+    const recommendationFormat = recommendations.get(sectionId)?.format ?? null;
 
     updateMediaItems(sectionId, () => ({ type }));
     if (type === "image") {
       updateFormatUsageValue(sectionId, "visual");
     } else if (type === "audio") {
       updateFormatUsageValue(sectionId, "audio");
-    } else {
-      updateFormatUsageValue(sectionId, "multimodal");
     }
 
     const sectionText = `${section.title}. ${section.content}`;
@@ -359,7 +359,7 @@ export default function Reader() {
 
         if (type === "image") {
           updateMediaItems(sectionId, () => undefined);
-          updateFormatUsageValue(sectionId, "text");
+          updateFormatUsageValue(sectionId, recommendationFormat);
         }
 
         return false;
@@ -410,7 +410,7 @@ export default function Reader() {
 
         if (type === "audio") {
           updateMediaItems(sectionId, () => undefined);
-          updateFormatUsageValue(sectionId, "text");
+          updateFormatUsageValue(sectionId, recommendationFormat);
         }
 
         return false;
@@ -421,33 +421,18 @@ export default function Reader() {
       await generateImage();
     } else if (type === "audio") {
       await generateAudio();
-    } else {
-      const imageSuccess = await generateImage();
-      if (!imageSuccess) {
-        updateFormatUsageValue(sectionId, "audio");
-      }
-      const audioSuccess = await generateAudio();
-      if (imageSuccess && audioSuccess) {
-        updateFormatUsageValue(sectionId, "multimodal");
-      } else if (imageSuccess && !audioSuccess) {
-        updateFormatUsageValue(sectionId, "visual");
-      } else if (!imageSuccess && audioSuccess) {
-        updateFormatUsageValue(sectionId, "audio");
-      } else {
-        updateFormatUsageValue(sectionId, "text");
-        updateMediaItems(sectionId, () => undefined);
-      }
     }
-  }, [toast, updateFormatUsageValue, updateMediaItems]);
+  }, [toast, updateFormatUsageValue, updateMediaItems, recommendations]);
 
   const handleMediaRemove = useCallback((sectionId: number) => {
     updateMediaItems(sectionId, () => undefined);
-    updateFormatUsageValue(sectionId, "text");
+    const recommendationFormat = recommendations.get(sectionId)?.format ?? null;
+    updateFormatUsageValue(sectionId, recommendationFormat);
     toast({
       title: "Media removed",
       description: "The multimedia placeholder has been removed.",
     });
-  }, [toast, updateMediaItems, updateFormatUsageValue]);
+  }, [toast, updateMediaItems, updateFormatUsageValue, recommendations]);
 
   const flushSectionInteraction = useCallback(async (sectionId: number, durationMs: number) => {
     // Only record interactions with meaningful duration (at least 100ms)
@@ -456,9 +441,10 @@ export default function Reader() {
     }
 
     const roundedDuration = Math.max(Math.round(durationMs), 0);
+    const recommendedFormat = recommendations.get(sectionId)?.format ?? null;
     const interaction = {
       sectionId,
-      formatUsed: formatUsageRef.current.get(sectionId) ?? "text",
+      formatUsed: formatUsageRef.current.get(sectionId) ?? recommendedFormat ?? "visual",
       timeSpentMs: roundedDuration,
       quizScore: quizScoresRef.current.get(sectionId) ?? null,
       completed: true,
@@ -474,7 +460,7 @@ export default function Reader() {
     } catch (error) {
       console.error("Failed to persist interaction", error);
     }
-  }, [recordInteractionMutation]);
+  }, [recordInteractionMutation, recommendations]);
 
   useEffect(() => {
     flushSectionInteractionRef.current = flushSectionInteraction;
@@ -617,11 +603,6 @@ export default function Reader() {
       return;
     }
 
-    if (recommendation.format === "text") {
-      updateFormatUsageValue(section.id, "text");
-      return;
-    }
-
     if (autoGeneratedSectionsRef.current.has(section.id)) {
       return;
     }
@@ -637,10 +618,8 @@ export default function Reader() {
       void handleMediaAdd(section.id, "image");
     } else if (recommendation.format === "audio") {
       void handleMediaAdd(section.id, "audio");
-    } else if (recommendation.format === "multimodal") {
-      void handleMediaAdd(section.id, "multimodal");
     }
-  }, [currentPage, recommendations, handleMediaAdd, mediaItems, updateFormatUsageValue]);
+  }, [currentPage, recommendations, handleMediaAdd, mediaItems]);
 
   return (
     <div className="h-screen flex flex-col" data-testid="reader-page">

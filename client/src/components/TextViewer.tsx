@@ -27,11 +27,11 @@ interface TextViewerProps {
   searchQuery?: string;
   currentSearchResult?: number;
   annotations?: Annotation[];
-  mediaItems?: Map<number, { type: "image" | "audio" | "multimodal"; audioUrl?: string; imageUrl?: string }>;
+  mediaItems?: Map<number, { type: "image" | "audio"; audioUrl?: string; imageUrl?: string }>;
   quiz?: Quiz;
   onPageChange: (page: number) => void;
   onSearchMatchesFound?: (matches: SearchMatch[]) => void;
-  onMediaAdd?: (sectionId: number, type: "image" | "audio" | "multimodal") => void;
+  onMediaAdd?: (sectionId: number, type: "image" | "audio") => void;
   onMediaRemove?: (sectionId: number) => void;
   aiRecommendation?: { sectionId: number; format: LearningFormat; reasoning: string; confidence: number };
   activeSectionId: number;
@@ -210,12 +210,9 @@ export function TextViewer({
     const media = mediaItems?.get(sectionId);
     const isRecommended = aiRecommendation?.sectionId === sectionId;
     const recommendedFormat = aiRecommendation?.format;
-    const recommendedFormatDisplay =
-      recommendedFormat === "multimodal"
-        ? "Image + Audio"
-        : recommendedFormat
-        ? `${recommendedFormat.charAt(0).toUpperCase()}${recommendedFormat.slice(1)}`
-        : null;
+    const recommendedFormatDisplay = recommendedFormat
+      ? `${recommendedFormat.charAt(0).toUpperCase()}${recommendedFormat.slice(1)}`
+      : null;
 
     return (
       <div className="mt-6 border rounded-lg p-4 bg-muted/50">
@@ -240,12 +237,6 @@ export function TextViewer({
           <div className="flex flex-col items-center gap-4">
             {media.type === "image" && renderImageContent(media.imageUrl)}
             {media.type === "audio" && renderAudioContent(media.audioUrl)}
-            {media.type === "multimodal" && (
-              <div className="w-full flex flex-col gap-4">
-                {renderImageContent(media.imageUrl)}
-                {renderAudioContent(media.audioUrl)}
-              </div>
-            )}
             <button
               onClick={() => onMediaRemove?.(sectionId)}
               className="text-xs text-muted-foreground hover:text-foreground"
@@ -303,17 +294,6 @@ export function TextViewer({
                   </svg>
                   Audio
                 </button>
-                {recommendedFormat === "multimodal" && (
-                  <button
-                    onClick={() => onMediaAdd?.(sectionId, "multimodal")}
-                    className="flex-1 min-w-[140px] py-2 px-4 border rounded-md hover-elevate active-elevate-2 text-sm bg-card"
-                  >
-                    <svg className="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10M4 18h6" />
-                    </svg>
-                    Image + Audio
-                  </button>
-                )}
               </div>
             </div>
           </div>
