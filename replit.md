@@ -76,38 +76,43 @@ Preferred communication style: Simple, everyday language.
 - Centralized error handling with appropriate HTTP status codes
 
 **Data Layer:**
-- Storage abstraction interface (`IStorage`) allows swapping implementations
-- In-memory storage implementation (`MemStorage`) for development
-- Designed to support database integration (currently uses Drizzle ORM setup for future PostgreSQL migration)
+- Storage abstraction interface (`IStorage`) provides a clean API for data operations
+- PostgreSQL database implementation (`DbStorage`) for persistent data storage
+- Database connection via Neon serverless with Drizzle ORM
+- All user data (annotations, bookmarks, notes) persists permanently
 
 **Key Design Decisions:**
 - **Separation of concerns:** Routes handle HTTP, storage layer handles data persistence
 - **Type safety:** Shared schema definitions between client and server via `@shared` directory
 - **Validation:** Zod schemas ensure data integrity at API boundaries
-- **Abstraction:** Storage interface enables easy migration from in-memory to database persistence
+- **Persistence:** Database-backed storage ensures data survives server restarts
 
 ### Data Storage Solutions
 
 **Current Implementation:**
-- In-memory Map-based storage for rapid development
+- PostgreSQL database (via Neon serverless) for persistent storage
+- Database connection configured in `server/db.ts` using Drizzle ORM
+- Storage implementation in `server/storage.ts` using `DbStorage` class
 - Three main entities: Annotations, Bookmarks, Notes
 - UUID-based identifiers for all resources
 
-**Database Migration Ready:**
-- Drizzle ORM configured for PostgreSQL (via Neon serverless)
+**Database Configuration:**
+- Drizzle ORM for type-safe query building and PostgreSQL compatibility
 - Schema definitions in `shared/schema.ts` using `drizzle-orm/pg-core`
 - Migration configuration in `drizzle.config.ts`
-- Environment variable for `DATABASE_URL` connectivity
+- Environment variable `DATABASE_URL` for connectivity
+- Migrations run via `npm run db:push` command
 
 **Schema Design:**
-- **Annotations:** Support multiple types (highlight, underline, strikethrough, note, drawing, shape, textbox) with position data, text selections, and colors
-- **Bookmarks:** Simple page markers with labels
-- **Notes:** Rich text content with timestamps
-- **Users:** Prepared for authentication (username/password, currently unused)
+- **Annotations Table:** Stores highlights, underlines, and other text annotations with type, pageNumber, color, content, position (JSONB), textSelection (JSONB), createdAt
+- **Bookmarks Table:** Page markers with id, label, pageNumber, createdAt
+- **Notes Table:** User notes with id, content, createdAt, updatedAt
+- **Users Table:** Prepared for future authentication with username/password
 
 **Rationale:**
-- In-memory storage allows rapid prototyping without database setup
-- Drizzle ORM chosen for type-safe query building and PostgreSQL compatibility
+- PostgreSQL provides reliable, persistent data storage
+- Drizzle ORM ensures type-safe database operations
+- JSONB fields for flexible storage of complex annotation data
 - Shared Zod schemas ensure validation consistency between API and database layers
 - Neon serverless PostgreSQL enables scalable deployment without infrastructure management
 
