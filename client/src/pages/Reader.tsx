@@ -206,13 +206,8 @@ export default function Reader() {
     if (type === "audio") {
       // Generate audio using ElevenLabs
       try {
-        // Get the last section's content
-        const lastSection = sampleDocument.sections[sampleDocument.sections.length - 1];
-        const lastSectionText = lastSection.content;
-        
-        // Extract the last sentence
-        const sentences = lastSectionText.match(/[^.!?]+[.!?]+/g) || [];
-        const lastSentence = sentences[sentences.length - 1]?.trim() || lastSectionText;
+        // Use presummarized torque text
+        const torqueText = "Torque (τ), or rotational force, depends on force magnitude and lever arm length (τ = F × r × sinθ). Longer wrenches amplify torque for easier nut loosening. In automotive, diesel engines offer high torque for towing, while electric vehicles provide instant acceleration via immediate torque from zero RPM. Industrial machinery uses precise torque control to prevent component damage. Tools like screwdrivers optimize mechanical advantage. Measurement occurs in N·m or lb·ft using torque wrenches. Aerospace demands exact torque for safety, while biomechanics studies it for prosthetics and movement analysis. Digital systems now automate torque application, reducing errors across engineering, manufacturing, and healthcare.";
 
         toast({
           title: "Generating audio...",
@@ -224,7 +219,7 @@ export default function Reader() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: lastSentence }),
+          body: JSON.stringify({ text: torqueText }),
         });
 
         if (!response.ok) {
@@ -254,10 +249,8 @@ export default function Reader() {
     } else if (type === "image") {
       // Generate image using Gemini
       try {
-        // Gather all the text content from the document
-        const fullText = sampleDocument.sections
-          .map((section) => `${section.title}. ${section.content}`)
-          .join(" ");
+        // Use presummarized torque text
+        const torqueText = "Torque (τ), or rotational force, depends on force magnitude and lever arm length (τ = F × r × sinθ). Longer wrenches amplify torque for easier nut loosening. In automotive, diesel engines offer high torque for towing, while electric vehicles provide instant acceleration via immediate torque from zero RPM. Industrial machinery uses precise torque control to prevent component damage. Tools like screwdrivers optimize mechanical advantage. Measurement occurs in N·m or lb·ft using torque wrenches. Aerospace demands exact torque for safety, while biomechanics studies it for prosthetics and movement analysis. Digital systems now automate torque application, reducing errors across engineering, manufacturing, and healthcare.";
 
         toast({
           title: "Generating image...",
@@ -269,7 +262,7 @@ export default function Reader() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: fullText }),
+          body: JSON.stringify({ text: torqueText }),
         });
 
         if (!response.ok) {
