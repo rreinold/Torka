@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Annotation, type Bookmark, type Note, annotations, bookmarks, notes, users } from "@shared/schema";
+import { type User, type InsertUser, type Annotation, type Bookmark, type Note, type StudentInteraction, annotations, bookmarks, notes, users, studentInteractions } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -20,6 +20,10 @@ export interface IStorage {
   // Notes
   getNotes(): Promise<Note[]>;
   updateNote(id: string, content: string): Promise<Note>;
+  
+  // Student Interactions
+  getInteractionsBySection(sectionId: string | number): Promise<StudentInteraction[]>;
+  recordInteraction(interaction: Omit<StudentInteraction, 'id'> & { interactedAt?: string }): Promise<StudentInteraction>;
 }
 
 export class DbStorage implements IStorage {
@@ -155,6 +159,43 @@ export class DbStorage implements IStorage {
         updatedAt: dbNote.updatedAt,
       };
     }
+  }
+
+  async getInteractionsBySection(sectionId: string | number): Promise<StudentInteraction[]> {
+    const normalizedId = String(sectionId);
+    const dbInteractions = await db.select().from(studentInteractions).where(eq(studentInteractions.sectionId, normalizedId));
+    
+    return dbInteractions.map(dbInteraction => ({
+      id: dbInteraction.id,
+      sectionId: isNaN(Number(dbInteraction.sectionId)) ? dbInteraction.sectionId : Number(dbInteraction.sectionId),
+      formatUsed: dbInteraction.formatUsed as StudentInteraction['formatUsed'],
+      timeSpentMs: dbInteraction.timeSpentMs,
+      quizScore: dbInteraction.quizScore !== null ? dbInteraction.quizScore / 100 : null,
+      completed: dbInteraction.completed === 1,
+      interactedAt: dbInteraction.interactedAt,
+    }));
+  }
+
+  async recordInteraction(interaction: Omit<StudentInteraction, 'id'> & { interactedAt?: string }): Promise<StudentInteraction> {
+    const result = await db.insert(studentInteractions).values({
+      sectionId: String(interaction.sectionId),
+      formatUsed: interaction.formatUsed,
+      timeSpentMs: interaction.timeSpentMs,
+      quizScore: interaction.quizScore !== null ? Math.round(interaction.quizScore * 100) : null,
+      completed: interaction.completed ? 1 : 0,
+      interactedAt: interaction.interactedAt || new Date().toISOString(),
+    }).returning();
+
+    const dbInteraction = result[0];
+    return {
+      id: dbInteraction.id,
+      sectionId: isNaN(Number(dbInteraction.sectionId)) ? dbInteraction.sectionId : Number(dbInteraction.sectionId),
+      formatUsed: dbInteraction.formatUsed as StudentInteraction['formatUsed'],
+      timeSpentMs: dbInteraction.timeSpentMs,
+      quizScore: dbInteraction.quizScore !== null ? dbInteraction.quizScore / 100 : null,
+      completed: dbInteraction.completed === 1,
+      interactedAt: dbInteraction.interactedAt,
+    };
   }
 }
 

@@ -45,6 +45,16 @@ export const notes = pgTable("notes", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const studentInteractions = pgTable("student_interactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sectionId: text("section_id").notNull(),
+  formatUsed: text("format_used").notNull(),
+  timeSpentMs: integer("time_spent_ms").notNull(),
+  quizScore: integer("quiz_score"),
+  completed: integer("completed").notNull(),
+  interactedAt: text("interacted_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const annotationSchema = z.object({
   id: z.string(),
   type: annotationTypeSchema,
