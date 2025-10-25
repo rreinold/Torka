@@ -16,12 +16,37 @@ import {
   Upload,
   Lightbulb,
   User,
-  ArrowRight
+  ArrowRight,
+  Menu
 } from "lucide-react";
 
 export default function Landing() {
   return (
     <div className="min-h-screen">
+      {/* Navigation */}
+      <nav className="border-b">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold">Torka</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link href="/profile">
+                <Button variant="ghost" data-testid="button-nav-profile">
+                  Learning Profile
+                </Button>
+              </Link>
+              <Link href="/reader">
+                <Button data-testid="button-nav-reader">
+                  Start Reading
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="relative py-20 px-4 md:px-8 bg-gradient-to-br from-primary/10 via-background to-background">
         <div className="max-w-6xl mx-auto text-center">

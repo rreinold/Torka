@@ -4,8 +4,9 @@
 
 Torka is a modern web-based academic text reader application that transforms static textbooks into dynamic, personalized learning experiences with AI-generated multimedia content. The platform features:
 
-1. **Landing Page** (`/`): Marketing site showcasing Torka's value proposition, features, and benefits for personalized learning
-2. **Reader Application** (`/reader`): Full-featured PDF-like reading experience with advanced annotation and multimedia capabilities
+1. **Landing Page** (`/`): Marketing site with navigation to all sections, showcasing Torka's value proposition, features, and benefits for personalized learning
+2. **Learning Profile** (`/profile`): Comprehensive dashboard displaying personalized learning analytics including learning style radar charts, comprehension speed graphs, retention scores, optimal study times, media preferences, and quick stats
+3. **Reader Application** (`/reader`): Full-featured PDF-like reading experience with advanced annotation and multimedia capabilities
 
 The reader features a three-panel layout with a central document viewer, collapsible sidebar for notes and outline navigation, and a comprehensive toolbar for navigation and document manipulation. Built with a focus on academic workflows, it supports search functionality, note-taking, AI-generated diagrams (via Gemini), text-to-speech narration (via ElevenLabs), and interactive multiple-choice quizzes.
 
@@ -42,7 +43,15 @@ Preferred communication style: Simple, everyday language.
 - Theme context for dark/light mode preferences
 
 **Component Architecture:**
-- **Landing page** (`/pages/Landing.tsx`): Marketing landing page with hero section, value proposition, features, benefits, testimonials, and CTAs
+- **Landing page** (`/pages/Landing.tsx`): Marketing landing page with navigation bar, hero section, value proposition, features, benefits, testimonials, and CTAs
+- **Profile page** (`/pages/Profile.tsx`): Learning analytics dashboard with Recharts visualizations including:
+  - Radar chart for learning style modalities (Visual, Auditory, Reading/Writing, Kinesthetic)
+  - Line graph for comprehension speed by media type
+  - Progress rings for retention scores (24hr, 1-week, 1-month)
+  - Bar chart for optimal study hours
+  - Horizontal bars for media preference effectiveness
+  - Gauges for complexity preference and learning pace
+  - Quick stats sidebar (study sessions, quiz score, profile confidence, streak)
 - **Reader page** (`/pages/Reader.tsx`): Main reading application that orchestrates all subcomponents
 - **TextViewer**: Handles document rendering and page navigation
 - **Toolbar**: Provides navigation and zoom controls
