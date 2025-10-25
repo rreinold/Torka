@@ -1,8 +1,13 @@
-# Academic Text Reader Application
+# Torka - Academic Text Reader Application
 
 ## Overview
 
-This is a modern web-based academic text reader application designed to provide a PDF-like reading experience with advanced annotation and multimedia capabilities. The application features a three-panel layout with a central document viewer, collapsible sidebar for tools and annotations, and a comprehensive toolbar for navigation and document manipulation. Built with a focus on academic workflows, it supports text highlighting, note-taking, bookmarking, and search functionality similar to professional PDF readers like Adobe Acrobat.
+Torka is a modern web-based academic text reader application that transforms static textbooks into dynamic, personalized learning experiences with AI-generated multimedia content. The platform features:
+
+1. **Landing Page** (`/`): Marketing site showcasing Torka's value proposition, features, and benefits for personalized learning
+2. **Reader Application** (`/reader`): Full-featured PDF-like reading experience with advanced annotation and multimedia capabilities
+
+The reader features a three-panel layout with a central document viewer, collapsible sidebar for notes and outline navigation, and a comprehensive toolbar for navigation and document manipulation. Built with a focus on academic workflows, it supports search functionality, note-taking, AI-generated diagrams (via Gemini), text-to-speech narration (via ElevenLabs), and interactive multiple-choice quizzes.
 
 ## User Preferences
 
@@ -37,12 +42,14 @@ Preferred communication style: Simple, everyday language.
 - Theme context for dark/light mode preferences
 
 **Component Architecture:**
-- Main Reader page orchestrates all subcomponents
-- TextViewer handles document rendering and page navigation
-- Toolbar provides navigation and zoom controls
-- Sidebar manages tabs for annotations, bookmarks, and notes
-- AnnotationToolbar enables markup tool selection
-- SearchPanel provides document-wide search functionality
+- **Landing page** (`/pages/Landing.tsx`): Marketing landing page with hero section, value proposition, features, benefits, testimonials, and CTAs
+- **Reader page** (`/pages/Reader.tsx`): Main reading application that orchestrates all subcomponents
+- **TextViewer**: Handles document rendering and page navigation
+- **Toolbar**: Provides navigation and zoom controls
+- **Sidebar**: Simplified to two tabs - Notes (default) and Outline for quick section navigation
+- **SearchPanel**: Document-wide search functionality with result highlighting
+- **Multimedia Section**: Bottom section with AI-generated images (Gemini) and audio narration (ElevenLabs)
+- **Quiz Component**: Interactive multiple-choice quiz with visual feedback
 
 ### Backend Architecture
 
