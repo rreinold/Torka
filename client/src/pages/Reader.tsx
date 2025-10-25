@@ -30,7 +30,7 @@ export default function Reader() {
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeTool, setActiveTool] = useState<AnnotationType | null>(null);
   const [activeColor, setActiveColor] = useState<HighlightColor>("yellow");
-  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio"; audioUrl?: string }>>(new Map());
+  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "audio"; audioUrl?: string; imageUrl?: string }>>(new Map());
 
   const totalPages = sampleDocument.sections.length;
   const totalSearchResults = searchMatches.length;
@@ -251,11 +251,51 @@ export default function Reader() {
           variant: "destructive",
         });
       }
-    } else {
-      toast({
-        title: "Image added",
-        description: "An image placeholder has been added.",
-      });
+    } else if (type === "image") {
+      // Generate image using Gemini
+      try {
+        // Gather all the text content from the document
+        const fullText = sampleDocument.sections
+          .map((section) => `${section.title}. ${section.content}`)
+          .join(" ");
+
+        toast({
+          title: "Generating image...",
+          description: "Please wait while we create an image representing your content.",
+        });
+
+        const response = await fetch("/api/text-to-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: fullText }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate image");
+        }
+
+        const imageBlob = await response.blob();
+        const imageUrl = URL.createObjectURL(imageBlob);
+        
+        // Store the image URL with the media item
+        const mapWithImage = new Map(newMap);
+        mapWithImage.set(sectionId, { type, imageUrl });
+        setMediaItems(mapWithImage);
+
+        toast({
+          title: "Image generated",
+          description: "Your AI-generated image is ready to view.",
+        });
+      } catch (error) {
+        console.error("Image generation error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate image. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
