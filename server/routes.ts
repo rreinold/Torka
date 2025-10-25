@@ -126,8 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent";
 
       // Create a prompt that asks for a helpful diagram
-      const prompt = `Generate a helpful diagram for content
-
+      const prompt = `Generate a helpful diagram for content using style of 2d graphics:
 # Content
 ${text}`;
 
