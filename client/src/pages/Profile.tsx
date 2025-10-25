@@ -41,7 +41,7 @@ const learningStyleData = [
   { subject: 'Visual', value: 85, fullMark: 100 },
   { subject: 'Auditory', value: 60, fullMark: 100 },
   { subject: 'Reading/Writing', value: 70, fullMark: 100 },
-  { subject: 'Kinesthetic', value: 45, fullMark: 100 },
+  { subject: 'Hands-On', value: 45, fullMark: 100 },
 ];
 
 const comprehensionSpeedData = [
