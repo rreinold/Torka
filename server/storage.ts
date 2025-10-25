@@ -1,5 +1,6 @@
-import { type User, type InsertUser, type Annotation, type Bookmark, type Note, type StudentInteraction } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type User, type InsertUser, type Annotation, type Bookmark, type Note, annotations, bookmarks, notes, users } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -19,134 +20,142 @@ export interface IStorage {
   // Notes
   getNotes(): Promise<Note[]>;
   updateNote(id: string, content: string): Promise<Note>;
-
-  // Student interactions
-  recordInteraction(interaction: Omit<StudentInteraction, 'id' | 'interactedAt'> & Partial<Pick<StudentInteraction, 'interactedAt'>>): Promise<StudentInteraction>;
-  getInteractions(): Promise<StudentInteraction[]>;
-  getInteractionsBySection(sectionId: string | number): Promise<StudentInteraction[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private annotations: Map<string, Annotation>;
-  private bookmarks: Map<string, Bookmark>;
-  private notes: Map<string, Note>;
-  private interactions: Map<string, StudentInteraction>;
-
-  constructor() {
-    this.users = new Map();
-    this.annotations = new Map();
-    this.bookmarks = new Map();
-    this.notes = new Map();
-    this.interactions = new Map();
-    
-    // Initialize with default note
-    const defaultNote: Note = {
-      id: "default",
-      content: "",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    this.notes.set(defaultNote.id, defaultNote);
-  }
-
+export class DbStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    const result = await db.insert(users).values(insertUser).returning();
+    return result[0];
   }
 
   async getAnnotations(): Promise<Annotation[]> {
-    return Array.from(this.annotations.values());
+    const dbAnnotations = await db.select().from(annotations);
+    return dbAnnotations.map(dbAnnotation => ({
+      id: dbAnnotation.id,
+      type: dbAnnotation.type as Annotation['type'],
+      pageNumber: dbAnnotation.pageNumber,
+      color: dbAnnotation.color as Annotation['color'] | undefined,
+      content: dbAnnotation.content || undefined,
+      position: dbAnnotation.position as Annotation['position'] | undefined,
+      textSelection: dbAnnotation.textSelection as Annotation['textSelection'] | undefined,
+      createdAt: dbAnnotation.createdAt,
+    }));
   }
 
   async createAnnotation(annotation: Omit<Annotation, 'id' | 'createdAt'>): Promise<Annotation> {
-    const newAnnotation: Annotation = {
-      ...annotation,
-      id: randomUUID(),
-      createdAt: new Date().toISOString(),
+    const result = await db.insert(annotations).values({
+      type: annotation.type,
+      pageNumber: annotation.pageNumber,
+      color: annotation.color || null,
+      content: annotation.content || null,
+      position: annotation.position as any,
+      textSelection: annotation.textSelection as any,
+    }).returning();
+
+    const dbAnnotation = result[0];
+    return {
+      id: dbAnnotation.id,
+      type: dbAnnotation.type as Annotation['type'],
+      pageNumber: dbAnnotation.pageNumber,
+      color: dbAnnotation.color as Annotation['color'] | undefined,
+      content: dbAnnotation.content || undefined,
+      position: dbAnnotation.position as Annotation['position'] | undefined,
+      textSelection: dbAnnotation.textSelection as Annotation['textSelection'] | undefined,
+      createdAt: dbAnnotation.createdAt,
     };
-    this.annotations.set(newAnnotation.id, newAnnotation);
-    return newAnnotation;
   }
 
   async deleteAnnotation(id: string): Promise<boolean> {
-    return this.annotations.delete(id);
+    const result = await db.delete(annotations).where(eq(annotations.id, id)).returning();
+    return result.length > 0;
   }
 
   async getBookmarks(): Promise<Bookmark[]> {
-    return Array.from(this.bookmarks.values());
+    const dbBookmarks = await db.select().from(bookmarks);
+    return dbBookmarks.map(dbBookmark => ({
+      id: dbBookmark.id,
+      label: dbBookmark.label,
+      pageNumber: dbBookmark.pageNumber,
+      createdAt: dbBookmark.createdAt,
+    }));
   }
 
   async createBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Promise<Bookmark> {
-    const newBookmark: Bookmark = {
-      ...bookmark,
-      id: randomUUID(),
-      createdAt: new Date().toISOString(),
+    const result = await db.insert(bookmarks).values({
+      label: bookmark.label,
+      pageNumber: bookmark.pageNumber,
+    }).returning();
+
+    const dbBookmark = result[0];
+    return {
+      id: dbBookmark.id,
+      label: dbBookmark.label,
+      pageNumber: dbBookmark.pageNumber,
+      createdAt: dbBookmark.createdAt,
     };
-    this.bookmarks.set(newBookmark.id, newBookmark);
-    return newBookmark;
   }
 
   async deleteBookmark(id: string): Promise<boolean> {
-    return this.bookmarks.delete(id);
+    const result = await db.delete(bookmarks).where(eq(bookmarks.id, id)).returning();
+    return result.length > 0;
   }
 
   async getNotes(): Promise<Note[]> {
-    return Array.from(this.notes.values());
+    const dbNotes = await db.select().from(notes);
+    return dbNotes.map(dbNote => ({
+      id: dbNote.id,
+      content: dbNote.content,
+      createdAt: dbNote.createdAt,
+      updatedAt: dbNote.updatedAt,
+    }));
   }
 
   async updateNote(id: string, content: string): Promise<Note> {
-    const note = this.notes.get(id);
-    if (!note) {
-      const newNote: Note = {
+    // Try to update existing note
+    const existing = await db.select().from(notes).where(eq(notes.id, id));
+    
+    if (existing.length > 0) {
+      const result = await db.update(notes)
+        .set({ 
+          content, 
+          updatedAt: new Date().toISOString() 
+        })
+        .where(eq(notes.id, id))
+        .returning();
+      
+      const dbNote = result[0];
+      return {
+        id: dbNote.id,
+        content: dbNote.content,
+        createdAt: dbNote.createdAt,
+        updatedAt: dbNote.updatedAt,
+      };
+    } else {
+      // Create new note
+      const result = await db.insert(notes).values({
         id,
         content,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      }).returning();
+      
+      const dbNote = result[0];
+      return {
+        id: dbNote.id,
+        content: dbNote.content,
+        createdAt: dbNote.createdAt,
+        updatedAt: dbNote.updatedAt,
       };
-      this.notes.set(id, newNote);
-      return newNote;
     }
-    
-    const updatedNote: Note = {
-      ...note,
-      content,
-      updatedAt: new Date().toISOString(),
-    };
-    this.notes.set(id, updatedNote);
-    return updatedNote;
-  }
-
-  async recordInteraction(interaction: Omit<StudentInteraction, 'id' | 'interactedAt'> & Partial<Pick<StudentInteraction, 'interactedAt'>>): Promise<StudentInteraction> {
-    const id = randomUUID();
-    const stored: StudentInteraction = {
-      ...interaction,
-      id,
-      interactedAt: interaction.interactedAt ?? new Date().toISOString(),
-    };
-    this.interactions.set(id, stored);
-    return stored;
-  }
-
-  async getInteractions(): Promise<StudentInteraction[]> {
-    return Array.from(this.interactions.values()).sort((a, b) => a.interactedAt.localeCompare(b.interactedAt));
-  }
-
-  async getInteractionsBySection(sectionId: string | number): Promise<StudentInteraction[]> {
-    return (await this.getInteractions()).filter((interaction) => interaction.sectionId === sectionId);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DbStorage();
