@@ -125,8 +125,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Using Gemini's image generation model
       const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent";
 
-      // Create a prompt that asks for an image representing the content
-      const prompt = `Create a detailed, photorealistic image that visually represents the following educational content: ${text}`;
+      // Create a prompt that asks for a helpful diagram
+      const prompt = `Generate a helpful diagram for content
+
+# Content
+${text}`;
 
       const response = await fetch(`${url}?key=${apiKey}`, {
         method: "POST",
