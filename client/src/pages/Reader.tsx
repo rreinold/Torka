@@ -305,6 +305,7 @@ export default function Reader() {
           currentSearchResult={currentSearchResult}
           annotations={annotations}
           mediaItems={mediaItems}
+          quiz={sampleDocument.quiz}
           onPageChange={handlePageChange}
           onSearchMatchesFound={handleSearchMatchesFound}
           onMediaAdd={handleMediaAdd}

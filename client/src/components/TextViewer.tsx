@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import type { Annotation } from "@shared/schema";
 
 interface Section {
@@ -14,6 +14,12 @@ interface SearchMatch {
   length: number;
 }
 
+interface Quiz {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+}
+
 interface TextViewerProps {
   sections: Section[];
   currentPage: number;
@@ -22,6 +28,7 @@ interface TextViewerProps {
   currentSearchResult?: number;
   annotations?: Annotation[];
   mediaItems?: Map<number, { type: "image" | "video" }>;
+  quiz?: Quiz;
   onPageChange: (page: number) => void;
   onSearchMatchesFound?: (matches: SearchMatch[]) => void;
   onMediaAdd?: (sectionId: number, type: "image" | "video") => void;
@@ -44,6 +51,7 @@ export function TextViewer({
   currentSearchResult = 0,
   annotations = [],
   mediaItems,
+  quiz,
   onPageChange,
   onSearchMatchesFound,
   onMediaAdd,
@@ -52,6 +60,8 @@ export function TextViewer({
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const matchRefs = useRef<(HTMLElement | null)[]>([]);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
 
   // Build search match index
   const searchMatches = useMemo(() => {
@@ -349,6 +359,88 @@ export function TextViewer({
             </div>
           )}
         </div>
+
+        {/* Quiz section at the bottom */}
+        {quiz && (
+          <div className="mt-8 border rounded-lg p-6 bg-muted/50">
+            <h3 className="font-serif text-xl font-semibold mb-4 text-foreground">Quiz</h3>
+            <p className="font-serif text-base mb-6 text-foreground">{quiz.question}</p>
+            
+            <div className="space-y-3 mb-6">
+              {quiz.options.map((option, index) => (
+                <label
+                  key={index}
+                  className={`flex items-center gap-3 p-4 border rounded-md cursor-pointer transition-colors ${
+                    selectedAnswer === index
+                      ? "bg-primary/10 border-primary"
+                      : "hover-elevate"
+                  } ${
+                    quizSubmitted
+                      ? index === quiz.correctAnswer
+                        ? "bg-green-100 dark:bg-green-900/30 border-green-500"
+                        : selectedAnswer === index
+                        ? "bg-red-100 dark:bg-red-900/30 border-red-500"
+                        : ""
+                      : ""
+                  }`}
+                  data-testid={`quiz-option-${index}`}
+                >
+                  <input
+                    type="radio"
+                    name="quiz-answer"
+                    value={index}
+                    checked={selectedAnswer === index}
+                    onChange={() => !quizSubmitted && setSelectedAnswer(index)}
+                    disabled={quizSubmitted}
+                    className="w-4 h-4"
+                  />
+                  <span className="flex-1 text-sm">{option}</span>
+                  {quizSubmitted && index === quiz.correctAnswer && (
+                    <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                  {quizSubmitted && selectedAnswer === index && index !== quiz.correctAnswer && (
+                    <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                </label>
+              ))}
+            </div>
+
+            {!quizSubmitted ? (
+              <button
+                onClick={() => {
+                  if (selectedAnswer !== null) {
+                    setQuizSubmitted(true);
+                  }
+                }}
+                disabled={selectedAnswer === null}
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover-elevate active-elevate-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="button-submit-quiz"
+              >
+                Submit Answer
+              </button>
+            ) : (
+              <div className={`p-4 rounded-md ${
+                selectedAnswer === quiz.correctAnswer
+                  ? "bg-green-100 dark:bg-green-900/30 border border-green-500"
+                  : "bg-red-100 dark:bg-red-900/30 border border-red-500"
+              }`}>
+                <p className={`font-semibold ${
+                  selectedAnswer === quiz.correctAnswer
+                    ? "text-green-800 dark:text-green-300"
+                    : "text-red-800 dark:text-red-300"
+                }`} data-testid="quiz-result">
+                  {selectedAnswer === quiz.correctAnswer
+                    ? "✓ Correct! Well done!"
+                    : "✗ Incorrect. The correct answer is highlighted above."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

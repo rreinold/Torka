@@ -16,5 +16,15 @@ export const sampleDocument = {
       title: "Measuring and Controlling Torque",
       content: "Accurate measurement and control of torque is vital in many technical fields, from manufacturing to biomechanics. Torque is typically measured in Newton-meters (N⋅m) in the SI system or pound-feet (lb⋅ft) in imperial units, with specialized instruments called torque wrenches and torque sensors providing precise measurements. In industrial settings, torque specifications are critical for quality control – aerospace applications, for instance, require extremely precise torque values to ensure safety and reliability of aircraft components. Modern technology has introduced digital torque wrenches and automated torque control systems that can apply exact amounts of rotational force with minimal human error. In biomechanics, understanding torque helps researchers analyze human movement, design prosthetics, and develop rehabilitation protocols, as every joint in the human body acts as a pivot point where muscles generate torque to produce movement. This interdisciplinary importance of torque demonstrates its fundamental role in both understanding natural phenomena and advancing technological innovation."
     }
-  ]
+  ],
+  quiz: {
+    question: "What happens when you increase the lever arm length while applying the same force?",
+    options: [
+      "The torque decreases",
+      "The torque increases",
+      "The torque remains the same",
+      "The force becomes linear"
+    ],
+    correctAnswer: 1
+  }
 };
