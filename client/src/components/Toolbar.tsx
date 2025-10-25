@@ -20,10 +20,11 @@ import {
   Sun,
   PanelRightClose,
   PanelRightOpen,
-  FileDown,
+  User,
   Pen,
 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { Link } from "wouter";
 
 interface ToolbarProps {
   currentPage: number;
@@ -164,14 +165,16 @@ export function Toolbar({
           <Highlighter className="w-4 h-4" />
           Annotate
         </Button>
-        <Button
-          variant="ghost"
-          size="default"
-          data-testid="button-export"
-        >
-          <FileDown className="w-4 h-4" />
-          Export
-        </Button>
+        <Link href="/profile">
+          <Button
+            variant="ghost"
+            size="default"
+            data-testid="button-profile"
+          >
+            <User className="w-4 h-4" />
+            Profile
+          </Button>
+        </Link>
       </div>
 
       <div className="flex items-center gap-2">
