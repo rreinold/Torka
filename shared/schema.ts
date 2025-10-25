@@ -20,6 +20,31 @@ export type User = typeof users.$inferSelect;
 export const annotationTypeSchema = z.enum(['highlight', 'underline', 'strikethrough', 'note', 'drawing', 'shape', 'textbox']);
 export const highlightColorSchema = z.enum(['yellow', 'green', 'blue', 'pink', 'orange']);
 
+export const annotations = pgTable("annotations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull(),
+  pageNumber: integer("page_number").notNull(),
+  color: text("color"),
+  content: text("content"),
+  position: jsonb("position"),
+  textSelection: jsonb("text_selection"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const bookmarks = pgTable("bookmarks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  label: text("label").notNull(),
+  pageNumber: integer("page_number").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const notes = pgTable("notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  content: text("content").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const annotationSchema = z.object({
   id: z.string(),
   type: annotationTypeSchema,
