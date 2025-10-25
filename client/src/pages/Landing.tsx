@@ -19,6 +19,36 @@ import {
   ArrowRight,
   Menu
 } from "lucide-react";
+import { 
+  Radar, 
+  RadarChart, 
+  PolarGrid, 
+  PolarAngleAxis, 
+  PolarRadiusAxis,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
+
+// Mock data for visualizations
+const learningStyleData = [
+  { subject: 'Visual', value: 85, fullMark: 100 },
+  { subject: 'Auditory', value: 60, fullMark: 100 },
+  { subject: 'Reading/Writing', value: 70, fullMark: 100 },
+  { subject: 'Kinesthetic', value: 45, fullMark: 100 },
+];
+
+const comprehensionSpeedData = [
+  { session: 'Week 1', videos: 65, diagrams: 80, audio: 55, text: 70, interactive: 75 },
+  { session: 'Week 2', videos: 70, diagrams: 85, audio: 60, text: 72, interactive: 80 },
+  { session: 'Week 3', videos: 75, diagrams: 88, audio: 65, text: 75, interactive: 82 },
+  { session: 'Week 4', videos: 78, diagrams: 92, audio: 68, text: 78, interactive: 85 },
+];
 
 export default function Landing() {
   return (
@@ -143,8 +173,92 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Learning Profile Preview */}
       <section className="py-20 px-4 md:px-8 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" data-testid="text-profile-preview-title">
+              See Your Learning Style Come to Life
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Torka analyzes your interactions and builds a comprehensive learning profile, 
+              helping you understand exactly how you learn best.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Learning Style Overview */}
+            <Card data-testid="card-preview-learning-style">
+              <CardHeader>
+                <CardTitle>Learning Style Overview</CardTitle>
+                <CardDescription>
+                  Discover your unique learning modality balance
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RadarChart data={learningStyleData}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="subject" />
+                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                    <Radar 
+                      name="Learning Style" 
+                      dataKey="value" 
+                      stroke="hsl(var(--primary))" 
+                      fill="hsl(var(--primary))" 
+                      fillOpacity={0.6} 
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+                <div className="mt-4 text-center">
+                  <Badge className="text-sm px-3 py-1">
+                    <Brain className="w-3 h-3 mr-1" />
+                    Visual Learner (85%)
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Comprehension Speed */}
+            <Card data-testid="card-preview-comprehension">
+              <CardHeader>
+                <CardTitle>Comprehension Speed by Media Type</CardTitle>
+                <CardDescription>
+                  Track how quickly you grasp concepts with different formats
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={comprehensionSpeedData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="session" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="diagrams" stroke="#10b981" strokeWidth={2} name="Diagrams" />
+                    <Line type="monotone" dataKey="interactive" stroke="#3b82f6" strokeWidth={2} name="Interactive" />
+                    <Line type="monotone" dataKey="videos" stroke="#f59e0b" strokeWidth={2} name="Videos" />
+                    <Line type="monotone" dataKey="text" stroke="#8b5cf6" strokeWidth={2} name="Text" />
+                    <Line type="monotone" dataKey="audio" stroke="#ec4899" strokeWidth={2} name="Audio" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-8">
+            <Link href="/profile">
+              <Button size="lg" variant="outline" data-testid="button-view-full-profile">
+                View Full Learning Profile
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-20 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16" data-testid="text-features-title">
             Powered by Intelligence, Designed for Understanding
