@@ -1,11 +1,15 @@
-import { useEffect, useRef, useMemo } from "react";
-import type { Annotation } from "@shared/schema";
-
-interface Section {
-  id: number;
-  title: string;
-  content: string;
-}
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Toolbar } from "@/components/Toolbar";
+import { TextViewer } from "@/components/TextViewer";
+import { Sidebar } from "@/components/Sidebar";
+import { SearchPanel } from "@/components/SearchPanel";
+import { AnnotationToolbar } from "@/components/AnnotationToolbar";
+import { sampleDocument } from "@/lib/sampleText";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
+import * as api from "@/lib/api";
+import type { Annotation, Bookmark, Note, AnnotationType, HighlightColor } from "@shared/schema";
 
 interface SearchMatch {
   sectionIndex: number;
@@ -14,256 +18,312 @@ interface SearchMatch {
   length: number;
 }
 
-interface TextViewerProps {
-  sections: Section[];
-  currentPage: number;
-  zoom: number;
-  searchQuery?: string;
-  currentSearchResult?: number;
-  annotations?: Annotation[];
-  onPageChange: (page: number) => void;
-  onSearchMatchesFound?: (matches: SearchMatch[]) => void;
-}
+export default function Reader() {
+  const { toast } = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [zoom, setZoom] = useState(100);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAnnotateMode, setIsAnnotateMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentSearchResult, setCurrentSearchResult] = useState(0);
+  const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
+  const [activeTool, setActiveTool] = useState<AnnotationType | null>(null);
+  const [activeColor, setActiveColor] = useState<HighlightColor>("yellow");
+  const [mediaItems, setMediaItems] = useState<Map<number, { type: "image" | "video" }>>(new Map());
 
-interface TextSpan {
-  start: number;
-  end: number;
-  type: "annotation" | "search" | "search-active";
-  annotation?: Annotation;
-  matchIndex?: number;
-}
+  const totalPages = sampleDocument.sections.length;
+  const totalSearchResults = searchMatches.length;
 
-export function TextViewer({
-  sections,
-  currentPage,
-  zoom,
-  searchQuery,
-  currentSearchResult = 0,
-  annotations = [],
-  onPageChange,
-  onSearchMatchesFound,
-}: TextViewerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const matchRefs = useRef<(HTMLElement | null)[]>([]);
+  // Fetch data
+  const { data: annotations = [] } = useQuery<Annotation[]>({
+    queryKey: ["/api/annotations"],
+  });
 
-  // Build search match index
-  const searchMatches = useMemo(() => {
-    if (!searchQuery || !searchQuery.trim()) {
-      return [];
-    }
+  const { data: bookmarks = [] } = useQuery<Bookmark[]>({
+    queryKey: ["/api/bookmarks"],
+  });
 
-    const matches: SearchMatch[] = [];
-    sections.forEach((section, sectionIndex) => {
-      const text = section.title + " " + section.content;
-      const regex = new RegExp(searchQuery, "gi");
-      let match;
-      let matchIndex = 0;
+  const { data: notes = [] } = useQuery<Note[]>({
+    queryKey: ["/api/notes"],
+  });
 
-      while ((match = regex.exec(text)) !== null) {
-        matches.push({
-          sectionIndex,
-          matchIndex,
-          position: match.index,
-          length: match[0].length,
-        });
-        matchIndex++;
-      }
-    });
-
-    return matches;
-  }, [sections, searchQuery]);
-
-  useEffect(() => {
-    onSearchMatchesFound?.(searchMatches);
-  }, [searchMatches, onSearchMatchesFound]);
-
-  // Scroll to current page
-  useEffect(() => {
-    if (sectionRefs.current[currentPage - 1]) {
-      sectionRefs.current[currentPage - 1]?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+  // Mutations
+  const createAnnotationMutation = useMutation({
+    mutationFn: api.createAnnotation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/annotations"] });
+      toast({
+        title: "Annotation created",
+        description: "Your annotation has been saved.",
       });
-    }
-  }, [currentPage]);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create annotation.",
+        variant: "destructive",
+      });
+    },
+  });
 
-  // Scroll to current search result
-  useEffect(() => {
-    if (searchMatches.length > 0 && matchRefs.current[currentSearchResult]) {
-      const match = searchMatches[currentSearchResult];
-      if (currentPage !== match.sectionIndex + 1) {
-        onPageChange(match.sectionIndex + 1);
-      }
-      setTimeout(() => {
-        matchRefs.current[currentSearchResult]?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
+  const deleteAnnotationMutation = useMutation({
+    mutationFn: api.deleteAnnotation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/annotations"] });
+      toast({
+        title: "Annotation deleted",
+        description: "Your annotation has been removed.",
+      });
+    },
+  });
+
+  const createBookmarkMutation = useMutation({
+    mutationFn: api.createBookmark,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bookmarks"] });
+      toast({
+        title: "Bookmark created",
+        description: "Your bookmark has been saved.",
+      });
+    },
+  });
+
+  const deleteBookmarkMutation = useMutation({
+    mutationFn: api.deleteBookmark,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bookmarks"] });
+      toast({
+        title: "Bookmark deleted",
+        description: "Your bookmark has been removed.",
+      });
+    },
+  });
+
+  const updateNoteMutation = useMutation({
+    mutationFn: ({ id, content }: { id: string; content: string }) =>
+      api.updateNote(id, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notes"] });
+    },
+  });
+
+  const handlePageChange = (page: number) => {
+    const validPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(validPage);
+  };
+
+  const handleZoomChange = (newZoom: number) => {
+    setZoom(Math.max(25, Math.min(500, newZoom)));
+  };
+
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !activeTool) return;
+
+    const selectedText = selection.toString().trim();
+    if (!selectedText) return;
+
+    // Simple annotation without precise offset tracking
+    // The text itself is enough for matching in most cases
+    if (activeTool === "highlight" || activeTool === "underline" || activeTool === "strikethrough") {
+      createAnnotationMutation.mutate({
+        type: activeTool,
+        pageNumber: currentPage,
+        color: activeColor,
+        textSelection: {
+          start: 0,
+          end: selectedText.length,
+          text: selectedText,
+        },
+      });
+    } else if (activeTool === "note") {
+      const noteContent = prompt("Enter your note:");
+      if (noteContent) {
+        createAnnotationMutation.mutate({
+          type: "note",
+          pageNumber: currentPage,
+          content: noteContent,
+          textSelection: {
+            start: 0,
+            end: selectedText.length,
+            text: selectedText,
+          },
         });
-      }, 100);
+      }
     }
-  }, [currentSearchResult, searchMatches]);
 
-  const getColorClass = (color?: string) => {
-    switch (color) {
-      case "yellow":
-        return "bg-yellow-300 dark:bg-yellow-600/60";
-      case "green":
-        return "bg-green-300 dark:bg-green-600/60";
-      case "blue":
-        return "bg-blue-300 dark:bg-blue-600/60";
-      case "pink":
-        return "bg-pink-300 dark:bg-pink-600/60";
-      case "orange":
-        return "bg-orange-300 dark:bg-orange-600/60";
-      default:
-        return "bg-yellow-300 dark:bg-yellow-600/60";
+    selection.removeAllRanges();
+  };
+
+  const handleAnnotationClick = (annotation: Annotation) => {
+    setCurrentPage(annotation.pageNumber);
+  };
+
+  const handleBookmarkClick = (bookmark: Bookmark) => {
+    setCurrentPage(bookmark.pageNumber);
+  };
+
+  const handleAnnotationDelete = (id: string) => {
+    deleteAnnotationMutation.mutate(id);
+  };
+
+  const handleBookmarkDelete = (id: string) => {
+    deleteBookmarkMutation.mutate(id);
+  };
+
+  const handleBookmarkAdd = (label: string, pageNumber: number) => {
+    createBookmarkMutation.mutate({ label, pageNumber });
+  };
+
+  const handleNoteUpdate = (content: string) => {
+    const noteId = notes[0]?.id || "default";
+    updateNoteMutation.mutate({ id: noteId, content });
+  };
+
+  const handleNextSearchResult = () => {
+    if (totalSearchResults > 0) {
+      setCurrentSearchResult((prev) => (prev + 1) % totalSearchResults);
     }
   };
 
-  const renderText = (text: string, sectionIndex: number, isTitle: boolean = false) => {
-    const sectionAnnotations = annotations.filter((a) => a.pageNumber === sectionIndex + 1);
-    const sectionMatches = searchMatches.filter((m) => m.sectionIndex === sectionIndex);
-
-    // Build all spans (annotations + search results)
-    const spans: TextSpan[] = [];
-
-    // Add annotation spans
-    sectionAnnotations.forEach((annotation) => {
-      if (!annotation.textSelection) return;
-      
-      const { text: annotatedText, start, end } = annotation.textSelection;
-      let actualStart = text.indexOf(annotatedText);
-      
-      if (actualStart !== -1) {
-        spans.push({
-          start: actualStart,
-          end: actualStart + annotatedText.length,
-          type: "annotation",
-          annotation,
-        });
-      }
-    });
-
-    // Add search match spans
-    let globalMatchOffset = searchMatches.findIndex((m) => m.sectionIndex === sectionIndex);
-    sectionMatches.forEach((match, idx) => {
-      const isActive = globalMatchOffset + idx === currentSearchResult;
-      spans.push({
-        start: match.position,
-        end: match.position + match.length,
-        type: isActive ? "search-active" : "search",
-        matchIndex: globalMatchOffset + idx,
-      });
-    });
-
-    // Sort spans by start position
-    spans.sort((a, b) => a.start - b.start);
-
-    // Render text with spans
-    const result: React.ReactNode[] = [];
-    let lastIndex = 0;
-
-    spans.forEach((span, spanIdx) => {
-      // Add text before this span
-      if (span.start > lastIndex) {
-        result.push(text.substring(lastIndex, span.start));
-      }
-
-      const spanText = text.substring(span.start, span.end);
-      const key = `span-${spanIdx}-${span.start}`;
-
-      if (span.type === "annotation" && span.annotation) {
-        const annotation = span.annotation;
-        let className = "rounded px-0.5";
-
-        if (annotation.type === "highlight") {
-          className += ` ${getColorClass(annotation.color)}`;
-        } else if (annotation.type === "underline") {
-          className += " underline decoration-2";
-        } else if (annotation.type === "strikethrough") {
-          className += " line-through";
-        }
-
-        // Check if this annotation overlaps with current search result
-        const hasActiveSearch = spans.some(
-          (s) =>
-            s.type === "search-active" &&
-            s.start < span.end &&
-            s.end > span.start
-        );
-
-        if (hasActiveSearch) {
-          className += " ring-2 ring-orange-500";
-        }
-
-        result.push(
-          <span
-            key={key}
-            className={className}
-            title={annotation.content || annotation.type}
-          >
-            {spanText}
-          </span>
-        );
-      } else if (span.type === "search" || span.type === "search-active") {
-        const isActive = span.type === "search-active";
-        result.push(
-          <mark
-            key={key}
-            ref={
-              span.matchIndex !== undefined
-                ? (el) => (matchRefs.current[span.matchIndex!] = el)
-                : undefined
-            }
-            className={`rounded px-0.5 ${
-              isActive
-                ? "bg-orange-400 dark:bg-orange-600"
-                : "bg-yellow-300 dark:bg-yellow-600"
-            }`}
-          >
-            {spanText}
-          </mark>
-        );
-      }
-
-      lastIndex = Math.max(lastIndex, span.end);
-    });
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      result.push(text.substring(lastIndex));
+  const handlePrevSearchResult = () => {
+    if (totalSearchResults > 0) {
+      setCurrentSearchResult((prev) => (prev - 1 + totalSearchResults) % totalSearchResults);
     }
-
-    return result.length > 0 ? result : text;
   };
+
+  const handleSearchMatchesFound = (matches: SearchMatch[]) => {
+    setSearchMatches(matches);
+    setCurrentSearchResult(0);
+  };
+
+  const handleMediaAdd = (sectionId: number, type: "image" | "video") => {
+    const newMap = new Map(mediaItems);
+    newMap.set(sectionId, { type });
+    setMediaItems(newMap);
+    toast({
+      title: `${type === "image" ? "Image" : "Video"} added`,
+      description: `A ${type} placeholder has been added to the section.`,
+    });
+  };
+
+  const handleMediaRemove = (sectionId: number) => {
+    const newMap = new Map(mediaItems);
+    newMap.delete(sectionId);
+    setMediaItems(newMap);
+    toast({
+      title: "Media removed",
+      description: "The multimedia placeholder has been removed.",
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key === "ArrowRight" || e.key === "PageDown") {
+        e.preventDefault();
+        handlePageChange(currentPage + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        handlePageChange(currentPage - 1);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        handlePageChange(1);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        handlePageChange(totalPages);
+      } else if (e.ctrlKey && e.key === "f") {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      } else if (e.key === "Escape") {
+        setIsSearchOpen(false);
+        setActiveTool(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    if (activeTool) {
+      const handleMouseUp = () => {
+        setTimeout(handleTextSelection, 10);
+      };
+      document.addEventListener("mouseup", handleMouseUp);
+      return () => document.removeEventListener("mouseup", handleMouseUp);
+    }
+  }, [activeTool, activeColor, currentPage]);
 
   return (
-    <div
-      ref={containerRef}
-      className="flex-1 overflow-y-auto bg-muted/30 p-8"
-      style={{ scrollPaddingTop: "80px" }}
-      data-testid="text-viewer"
-    >
-      <div
-        className="max-w-4xl mx-auto bg-card rounded-lg shadow-sm p-8 md:p-12 lg:p-16 transition-transform duration-200"
-        style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
-      >
-        {sections.map((section, index) => (
-          <div
-            key={section.id}
-            ref={(el) => (sectionRefs.current[index] = el)}
-            className="mb-12"
-            data-testid={`section-${section.id}`}
-          >
-            <h2 className="font-serif text-2xl font-semibold mb-6 text-foreground">
-              {renderText(section.title, index, true)}
-            </h2>
-            <p className="font-serif text-base leading-relaxed text-foreground whitespace-pre-wrap">
-              {renderText(section.content, index)}
-            </p>
-          </div>
-        ))}
+    <div className="h-screen flex flex-col" data-testid="reader-page">
+      <Toolbar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        zoom={zoom}
+        isSidebarOpen={isSidebarOpen}
+        onPageChange={handlePageChange}
+        onZoomChange={handleZoomChange}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
+        onAnnotateToggle={() => setIsAnnotateMode(!isAnnotateMode)}
+      />
+
+      {isSearchOpen && (
+        <SearchPanel
+          onSearch={setSearchQuery}
+          onClose={() => {
+            setIsSearchOpen(false);
+            setSearchQuery("");
+          }}
+          totalResults={totalSearchResults}
+          currentResult={currentSearchResult}
+          onNextResult={handleNextSearchResult}
+          onPrevResult={handlePrevSearchResult}
+        />
+      )}
+
+      {isAnnotateMode && (
+        <AnnotationToolbar
+          activeTool={activeTool}
+          activeColor={activeColor}
+          onToolChange={setActiveTool}
+          onColorChange={setActiveColor}
+        />
+      )}
+
+      <div className="flex-1 flex overflow-hidden">
+        <TextViewer
+          sections={sampleDocument.sections}
+          currentPage={currentPage}
+          zoom={zoom}
+          searchQuery={searchQuery}
+          currentSearchResult={currentSearchResult}
+          annotations={annotations}
+          mediaItems={mediaItems}
+          onPageChange={handlePageChange}
+          onSearchMatchesFound={handleSearchMatchesFound}
+          onMediaAdd={handleMediaAdd}
+          onMediaRemove={handleMediaRemove}
+        />
+
+        {isSidebarOpen && (
+          <Sidebar
+            annotations={annotations}
+            bookmarks={bookmarks}
+            notes={notes}
+            onAnnotationClick={handleAnnotationClick}
+            onBookmarkClick={handleBookmarkClick}
+            onAnnotationDelete={handleAnnotationDelete}
+            onBookmarkDelete={handleBookmarkDelete}
+            onBookmarkAdd={handleBookmarkAdd}
+            onNoteUpdate={handleNoteUpdate}
+          />
+        )}
       </div>
     </div>
   );
