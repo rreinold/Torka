@@ -439,6 +439,36 @@ ${text}`;
     }
   });
 
+  // Quiz submission endpoint
+  app.post("/api/submit", async (req, res) => {
+    try {
+      const submissionSchema = z.object({
+        sectionId: z.number(),
+        score: z.number().min(0).max(1),
+        timestamp: z.string().optional(),
+      });
+
+      const submission = submissionSchema.parse(req.body);
+      
+      // Return success response with submission details
+      const response = {
+        success: true,
+        sectionId: submission.sectionId,
+        score: submission.score,
+        timestamp: submission.timestamp ?? new Date().toISOString(),
+        message: submission.score === 1 ? "Correct answer!" : "Incorrect answer",
+      };
+
+      res.json(response);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to submit quiz" });
+      }
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

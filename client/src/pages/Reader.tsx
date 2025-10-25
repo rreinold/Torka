@@ -466,12 +466,31 @@ export default function Reader() {
     flushSectionInteractionRef.current = flushSectionInteraction;
   }, [flushSectionInteraction]);
 
-  const handleQuizSubmit = useCallback((sectionId: number, score: number) => {
+  const handleQuizSubmit = useCallback(async (sectionId: number, score: number) => {
     setQuizScores((prev) => {
       const map = new Map(prev);
       map.set(sectionId, score);
       return map;
     });
+
+    try {
+      const response = await fetch("/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sectionId,
+          score,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Quiz submission response:", data);
+    } catch (error) {
+      console.error("Failed to submit quiz:", error);
+    }
   }, []);
 
   useEffect(() => {
