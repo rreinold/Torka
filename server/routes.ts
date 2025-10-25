@@ -439,7 +439,7 @@ ${text}`;
     }
   });
 
-  // Quiz submission endpoint
+  // Quiz submission endpoint - proxies to external API
   app.post("/api/submit", async (req, res) => {
     try {
       const submissionSchema = z.object({
@@ -450,20 +450,35 @@ ${text}`;
 
       const submission = submissionSchema.parse(req.body);
       
-      // Return success response with submission details
-      const response = {
-        success: true,
-        sectionId: submission.sectionId,
-        score: submission.score,
-        timestamp: submission.timestamp ?? new Date().toISOString(),
-        message: submission.score === 1 ? "Correct answer!" : "Incorrect answer",
-      };
+      // Forward the request to the external API
+      const externalResponse = await fetch("https://aitxhackathon-production.up.railway.app/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sectionId: submission.sectionId,
+          score: submission.score,
+          timestamp: submission.timestamp ?? new Date().toISOString(),
+        }),
+      });
 
-      res.json(response);
+      if (!externalResponse.ok) {
+        const errorText = await externalResponse.text();
+        console.error("External API error:", errorText);
+        return res.status(externalResponse.status).json({ 
+          error: "External API request failed",
+          details: errorText 
+        });
+      }
+
+      const data = await externalResponse.json();
+      res.json(data);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: error.errors });
       } else {
+        console.error("Quiz submission error:", error);
         res.status(500).json({ error: "Failed to submit quiz" });
       }
     }
