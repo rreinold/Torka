@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "wouter";
 import { 
   BookOpen, 
@@ -17,7 +18,10 @@ import {
   Lightbulb,
   User,
   ArrowRight,
-  Menu
+  Menu,
+  Eye,
+  Ear,
+  Hand
 } from "lucide-react";
 import { 
   Radar, 
@@ -172,35 +176,62 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             {/* Learning Style Overview */}
             <Card data-testid="card-preview-learning-style">
               <CardHeader>
-                <CardTitle>Learning Style Overview</CardTitle>
-                <CardDescription>
-                  Discover your unique learning modality balance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RadarChart data={learningStyleData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                    <Radar 
-                      name="Learning Style" 
-                      dataKey="value" 
-                      stroke="hsl(var(--primary))" 
-                      fill="hsl(var(--primary))" 
-                      fillOpacity={0.6} 
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-                <div className="mt-4 text-center">
-                  <Badge className="text-sm px-3 py-1">
-                    <Brain className="w-3 h-3 mr-1" />
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <CardTitle>Learning Style Overview</CardTitle>
+                    <CardDescription>
+                      Discover your unique learning modality balance
+                    </CardDescription>
+                  </div>
+                  <Badge className="text-base px-4 py-2">
+                    <Eye className="w-4 h-4 mr-2" />
                     Visual Learner (85%)
                   </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Radar Chart */}
+                  <div className="flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RadarChart data={learningStyleData}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="subject" />
+                        <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                        <Radar 
+                          name="Learning Style" 
+                          dataKey="value" 
+                          stroke="hsl(var(--primary))" 
+                          fill="hsl(var(--primary))" 
+                          fillOpacity={0.6} 
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Percentage Breakdown */}
+                  <div className="space-y-4">
+                    {learningStyleData.map((style, index) => {
+                      const icons = [Eye, Ear, BookOpen, Hand];
+                      const Icon = icons[index];
+                      return (
+                        <div key={style.subject} className="space-y-2" data-testid={`learning-style-preview-${style.subject.toLowerCase()}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-medium">{style.subject}</span>
+                            </div>
+                            <span className="text-sm font-bold">{style.value}%</span>
+                          </div>
+                          <Progress value={style.value} />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </CardContent>
             </Card>
