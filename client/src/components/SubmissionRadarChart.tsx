@@ -35,7 +35,7 @@ export function SubmissionRadarChart({ data }: SubmissionRadarChartProps) {
   return (
     <Card className="w-80" data-testid="card-submission-radar">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm">Quiz Results</CardTitle>
+        <CardTitle className="text-sm">Live Learning Profile</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
