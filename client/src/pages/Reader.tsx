@@ -473,6 +473,10 @@ export default function Reader() {
       return map;
     });
 
+    // Get the media format the student selected for this section
+    const recommendedFormat = recommendations.get(sectionId)?.format ?? null;
+    const selectedFormat = formatUsageRef.current.get(sectionId) ?? recommendedFormat ?? "visual";
+
     try {
       const response = await fetch("/api/submit", {
         method: "POST",
@@ -483,6 +487,7 @@ export default function Reader() {
           sectionId,
           score,
           timestamp: new Date().toISOString(),
+          format: selectedFormat,
         }),
       });
 
@@ -491,7 +496,7 @@ export default function Reader() {
     } catch (error) {
       console.error("Failed to submit quiz:", error);
     }
-  }, []);
+  }, [recommendations]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -446,11 +446,19 @@ ${text}`;
         sectionId: z.number(),
         score: z.number().min(0).max(1),
         timestamp: z.string().optional(),
+        format: z.enum(["visual", "audio"]).optional(),
       });
 
       const submission = submissionSchema.parse(req.body);
       
-      // Forward the request to the external API
+      // Map internal format to external API enum
+      const formatMap: Record<string, string> = {
+        "visual": "IMAGE",
+        "audio": "AUDIO",
+      };
+      const apiFormat = formatMap[submission.format ?? "visual"] ?? "IMAGE";
+      
+      // Forward the request to the external API with required fields
       const externalResponse = await fetch("https://aitxhackathon-production.up.railway.app/submit", {
         method: "POST",
         headers: {
@@ -460,6 +468,8 @@ ${text}`;
           sectionId: submission.sectionId,
           score: submission.score,
           timestamp: submission.timestamp ?? new Date().toISOString(),
+          type: apiFormat,
+          correct: submission.score === 1,
         }),
       });
 
