@@ -32,14 +32,14 @@ stats_store = {
     "correct": {
         "IMAGE": 10,
         "AUDIO": 7,
-        "VIDEO": 0,
-        "SIMULATION": 0
+        "VIDEO": 3,
+        "SIMULATION": 3
     },
     "incorrect": {
         "IMAGE": 10,
         "AUDIO": 7,
-        "VIDEO": 0,
-        "SIMULATION": 0
+        "VIDEO": 3,
+        "SIMULATION": 3
     }
 }
 
