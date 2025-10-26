@@ -31,11 +31,13 @@ interface ToolbarProps {
   totalPages: number;
   zoom: number;
   isSidebarOpen: boolean;
+  selectedBook?: string;
   onPageChange: (page: number) => void;
   onZoomChange: (zoom: number) => void;
   onToggleSidebar: () => void;
   onSearchToggle: () => void;
   onAnnotateToggle: () => void;
+  onBookChange?: (bookId: string) => void;
 }
 
 export function Toolbar({
@@ -43,18 +45,31 @@ export function Toolbar({
   totalPages,
   zoom,
   isSidebarOpen,
+  selectedBook = "economics",
   onPageChange,
   onZoomChange,
   onToggleSidebar,
   onSearchToggle,
   onAnnotateToggle,
+  onBookChange,
 }: ToolbarProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="h-14 border-b bg-background flex items-center justify-between px-4 gap-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <h1 className="text-sm font-semibold">Text Reader</h1>
+        {onBookChange && (
+          <Select value={selectedBook} onValueChange={onBookChange}>
+            <SelectTrigger className="w-32 h-9" data-testid="select-book">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="economics">Economics</SelectItem>
+              <SelectItem value="physics">Physics</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="flex items-center gap-1 border rounded-lg p-1">

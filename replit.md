@@ -8,7 +8,11 @@ Torka is a modern web-based academic text reader application that transforms sta
 2. **Learning Profile** (`/profile`): Comprehensive dashboard displaying personalized learning analytics including learning style radar charts, comprehension speed graphs, retention scores, optimal study times, media preferences, and quick stats
 3. **Reader Application** (`/reader`): Full-featured PDF-like reading experience with advanced annotation and multimedia capabilities
 
-The reader features a three-panel layout with a central document viewer, collapsible sidebar for notes and outline navigation, and a comprehensive toolbar for navigation and document manipulation. Built with a focus on academic workflows, it supports search functionality, note-taking, AI-generated diagrams (via Gemini), text-to-speech narration (via ElevenLabs), and interactive multiple-choice quizzes.
+The reader features a three-panel layout with a central document viewer, collapsible sidebar for notes and outline navigation, and a comprehensive toolbar for navigation and document manipulation. Built with a focus on academic workflows, it supports search functionality, note-taking, AI-generated diagrams (via Gemini), text-to-speech narration (via ElevenLabs), interactive multiple-choice quizzes, and a book selector dropdown to switch between different textbooks.
+
+**Available Books:**
+- **Economics** (default): "3.1: Demand" - covering demand principles, price curves, and market shifters
+- **Physics**: "Understanding Torque: Principles and Applications" - covering rotational force, applications, and measurement
 
 ## User Preferences
 
@@ -36,6 +40,7 @@ Preferred communication style: Simple, everyday language.
 - **Typography system:** Serif fonts (Georgia/Charter) for reading content, sans-serif (Inter/SF Pro) for UI chrome
 - **Spacing primitives:** Tailwind units (1, 2, 3, 4, 6, 8, 12, 16, 20) for consistent spacing hierarchy
 - **Content-first philosophy:** Text rendering takes precedence over UI chrome, distraction-free reading environment
+- **Book selector:** Dropdown in toolbar allows instant switching between different textbooks, with automatic state reset
 
 **State Management:**
 - React Query for server-synchronized state (annotations, bookmarks, notes)
@@ -52,13 +57,14 @@ Preferred communication style: Simple, everyday language.
   - Horizontal bars for media preference effectiveness
   - Gauges for complexity preference and learning pace
   - Quick stats sidebar (study sessions, quiz score, profile confidence, streak)
-- **Reader page** (`/pages/Reader.tsx`): Main reading application that orchestrates all subcomponents
+- **Reader page** (`/pages/Reader.tsx`): Main reading application that orchestrates all subcomponents and manages book selection state
+- **Book Library** (`/lib/books.ts`): Centralized repository containing all available textbooks (Economics, Physics)
 - **TextViewer**: Handles document rendering and page navigation
-- **Toolbar**: Provides navigation and zoom controls
+- **Toolbar**: Provides navigation, zoom controls, and book selector dropdown
 - **Sidebar**: Simplified to two tabs - Notes (default) and Outline for quick section navigation
 - **SearchPanel**: Document-wide search functionality with result highlighting
 - **Multimedia Section**: Bottom section with AI-generated images (Gemini) and audio narration (ElevenLabs)
-- **Quiz Component**: Interactive multiple-choice quiz with visual feedback
+- **Quiz Component**: Interactive multiple-choice quiz with visual feedback and external API submission
 
 ### Backend Architecture
 

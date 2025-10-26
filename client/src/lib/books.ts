@@ -1,0 +1,81 @@
+export interface Book {
+  id: string;
+  title: string;
+  sections: Array<{
+    id: number;
+    title: string;
+    content: string;
+  }>;
+  quiz: {
+    question: string;
+    options: string[];
+    correctAnswer: number;
+  };
+}
+
+export const books: Record<string, Book> = {
+  economics: {
+    id: "economics",
+    title: "3.1: Demand",
+    sections: [
+      {
+        id: 1,
+        title: "Introduction to Demand",
+        content: "How many pizzas will people eat this year? How many doctor visits will people make? How many houses will people buy?\n\nEach good or service has its own special characteristics that determine the quantity people are willing and able to consume. One is the price of the good or service itself. Other independent variables that are important determinants of demand include consumer preferences, prices of related goods and services, income, demographic characteristics such as population size, and buyer expectations. The number of pizzas people will purchase, for example, depends very much on whether they like pizza. It also depends on the prices for alternatives such as hamburgers or spaghetti. The number of doctor visits is likely to vary with income—people with higher incomes are likely to see a doctor more often than people with lower incomes. The demands for pizza, for doctor visits, and for housing are certainly affected by the age distribution of the population and its size.\n\nWhile different variables play different roles in influencing the demands for different goods and services, economists pay special attention to one: the price of the good or service. Given the values of all the other variables that affect demand, a higher price tends to reduce the quantity people demand, and a lower price tends to increase it. A medium pizza typically sells for $5 to $10. Suppose the price were $30. Chances are, you would buy fewer pizzas at that price than you do now. Suppose pizzas typically sold for $2 each. At that price, people would be likely to buy more pizzas than they do now.\n\nWe will discuss first how price affects the quantity demanded of a good or service and then how other variables affect demand."
+      },
+      {
+        id: 2,
+        title: "Price and the Demand Curve",
+        content: "Because people will purchase different quantities of a good or service at different prices, economists must be careful when speaking of the \"demand\" for something. They have therefore developed some specific terms for expressing the general concept of demand.\n\nThe quantity demanded of a good or service is the quantity buyers are willing and able to buy at a particular price during a particular period, all other things unchanged. (As we learned, we can substitute the Latin phrase \"ceteris paribus\" for \"all other things unchanged.\") Suppose, for example, that 100,000 movie tickets are sold each month in a particular town at a price of $8 per ticket. That quantity—100,000—is the quantity of movie admissions demanded per month at a price of $8. If the price were $12, we would expect the quantity demanded to be less. If it were $4, we would expect the quantity demanded to be greater. The quantity demanded at each price would be different if other things that might affect it, such as the population of the town, were to change. That is why we add the qualifier that other things have not changed to the definition of quantity demanded.\n\nA demand schedule is a table that shows the quantities of a good or service demanded at different prices during a particular period, all other things unchanged. To introduce the concept of a demand schedule, let us consider the demand for coffee in the United States. We will ignore differences among types of coffee beans and roasts, and speak simply of coffee. A demand schedule shows quantities of coffee that will be demanded each month at prices ranging from $9 to $4 per pound. We see that the higher the price, the lower the quantity demanded.\n\nThe information given in a demand schedule can be presented with a demand curve, which is a graphical representation of a demand schedule. A demand curve thus shows the relationship between the price and quantity demanded of a good or service during a particular period, all other things unchanged. The demand curve shows the prices and quantities of coffee demanded that are given in the demand schedule. At point A, for example, we see that 25 million pounds of coffee per month are demanded at a price of $6 per pound. By convention, economists graph price on the vertical axis and quantity on the horizontal axis.\n\nPrice alone does not determine the quantity of coffee or any other good that people buy. To isolate the effect of changes in price on the quantity of a good or service demanded, however, we show the quantity demanded at each price, assuming that those other variables remain unchanged. We do the same thing in drawing a graph of the relationship between any two variables; we assume that the values of other variables that may affect the variables shown in the graph (such as income or population) remain unchanged for the period under consideration.\n\nA change in price, with no change in any of the other variables that affect demand, results in a movement along the demand curve. For example, if the price of coffee falls from $6 to $5 per pound, consumption rises from 25 million pounds to 30 million pounds per month. That is a movement from point A to point B along the demand curve. A movement along a demand curve that results from a change in price is called a change in quantity demanded. Note that a change in quantity demanded is not a change or shift in the demand curve; it is a movement along the demand curve.\n\nThe negative slope of the demand curve suggests a key behavioral relationship of economics. All other things unchanged, the law of demand holds that, for virtually all goods and services, a higher price leads to a reduction in quantity demanded and a lower price leads to an increase in quantity demanded.\n\nThe law of demand is called a law because the results of countless studies are consistent with it. Undoubtedly, you have observed one manifestation of the law. When a store finds itself with an overstock of some item, such as running shoes or tomatoes, and needs to sell these items quickly, what does it do? It typically has a sale, expecting that a lower price will increase the quantity demanded. In general, we expect the law of demand to hold. Given the values of other variables that influence demand, a higher price reduces the quantity demanded. A lower price increases the quantity demanded. Demand curves, in short, slope downward."
+      },
+      {
+        id: 3,
+        title: "Changes in Demand",
+        content: "Of course, price alone does not determine the quantity of a good or service that people consume. Coffee consumption, for example, will be affected by such variables as income and population. Preferences also play a role. The story at the beginning of the chapter illustrates as much. Starbucks \"turned people on\" to coffee. We also expect other prices to affect coffee consumption. People often eat doughnuts or bagels with their coffee, so a reduction in the price of doughnuts or bagels might induce people to drink more coffee. An alternative to coffee is tea, so a reduction in the price of tea might result in the consumption of more tea and less coffee. Thus, a change in any one of the variables held constant in constructing a demand schedule will change the quantities demanded at each price. The result will be a shift in the entire demand curve rather than a movement along the demand curve. A shift in a demand curve is called a change in demand.\n\nSuppose, for example, that something happens to increase the quantity of coffee demanded at each price. Several events could produce such a change: an increase in incomes, an increase in population, or an increase in the price of tea would each be likely to increase the quantity of coffee demanded at each price. Any such change produces a new demand schedule. When the quantity of coffee demanded per month is greater at each price than before, we show that graphically as a shift in the demand curve. The original curve, labeled D1, shifts to the right to D2. At a price of $6 per pound, for example, the quantity demanded rises from 25 million pounds per month (point A) to 35 million pounds per month (point A′).\n\nJust as demand can increase, it can decrease. In the case of coffee, demand might fall as a result of events such as a reduction in population, a reduction in the price of tea, or a change in preferences. For example, a definitive finding that the caffeine in coffee contributes to heart disease, which is currently being debated in the scientific community, could change preferences and reduce the demand for coffee.\n\nA reduction in the demand for coffee means less coffee is demanded at each price than before. The result is a shift in demand from the original curve D1 to D3. The quantity of coffee demanded at a price of $6 per pound falls from 25 million pounds per month (point A) to 15 million pounds per month (point A″). Note, again, that a change in quantity demanded, ceteris paribus, refers to a movement along the demand curve, while a change in demand refers to a shift in the demand curve.\n\nA variable that can change the quantity of a good or service demanded at each price is called a demand shifter. When these other variables change, the all-other-things-unchanged conditions behind the original demand curve no longer hold. Although different goods and services will have different demand shifters, the demand shifters are likely to include (1) consumer preferences, (2) the prices of related goods and services, (3) income, (4) demographic characteristics, and (5) buyer expectations. Next we look at each of these."
+      }
+    ],
+    quiz: {
+      question: "According to the law of demand, what happens when the price of a good increases, all other things unchanged?",
+      options: [
+        "The quantity demanded increases",
+        "The quantity demanded decreases",
+        "The quantity demanded stays the same",
+        "The demand curve shifts to the right"
+      ],
+      correctAnswer: 1
+    }
+  },
+  physics: {
+    id: "physics",
+    title: "Understanding Torque: Principles and Applications",
+    sections: [
+      {
+        id: 1,
+        title: "Understanding Torque: The Rotational Force",
+        content: "Torque, often referred to as the moment of force, is a fundamental concept in physics that describes the rotational effect of a force applied to an object. Unlike linear force, which causes objects to accelerate in a straight line, torque causes objects to rotate around an axis or pivot point. The magnitude of torque depends on two critical factors: the amount of force applied and the perpendicular distance from the axis of rotation to the line of action of the force, known as the lever arm or moment arm. Mathematically, torque (τ) is expressed as the cross product of the force vector and the position vector, or more simply as τ = F × r × sin(θ), where F is the force, r is the distance from the pivot point, and θ is the angle between the force and the lever arm. This relationship explains why longer wrenches make it easier to loosen tight bolts – increasing the lever arm amplifies the torque even with the same applied force."
+      },
+      {
+        id: 2,
+        title: "Applications and Real-World Examples",
+        content: "Torque plays a crucial role in countless everyday applications and engineering systems. In automotive engineering, engine torque determines a vehicle's acceleration and pulling power, with diesel engines typically producing higher torque at lower RPMs compared to gasoline engines, making them ideal for heavy-duty applications like towing and hauling. Electric motors in modern electric vehicles deliver instant torque from zero RPM, providing immediate acceleration that traditional combustion engines cannot match. Beyond transportation, torque is essential in industrial machinery, where precise torque control ensures proper assembly of components – too little torque might result in loose connections, while excessive torque can strip threads or damage materials. Even simple tools like screwdrivers, door handles, and steering wheels are designed with torque principles in mind, optimizing the mechanical advantage to make human effort more effective."
+      },
+      {
+        id: 3,
+        title: "Measuring and Controlling Torque",
+        content: "Accurate measurement and control of torque is vital in many technical fields, from manufacturing to biomechanics. Torque is typically measured in Newton-meters (N⋅m) in the SI system or pound-feet (lb⋅ft) in imperial units, with specialized instruments called torque wrenches and torque sensors providing precise measurements. In industrial settings, torque specifications are critical for quality control – aerospace applications, for instance, require extremely precise torque values to ensure safety and reliability of aircraft components. Modern technology has introduced digital torque wrenches and automated torque control systems that can apply exact amounts of rotational force with minimal human error. In biomechanics, understanding torque helps researchers analyze human movement, design prosthetics, and develop rehabilitation protocols, as every joint in the human body acts as a pivot point where muscles generate torque to produce movement. This interdisciplinary importance of torque demonstrates its fundamental role in both understanding natural phenomena and advancing technological innovation."
+      }
+    ],
+    quiz: {
+      question: "What happens when you increase the lever arm length while applying the same force?",
+      options: [
+        "The torque decreases",
+        "The torque increases",
+        "The torque remains the same",
+        "The force becomes linear"
+      ],
+      correctAnswer: 1
+    }
+  }
+};
+
+export const defaultBook = books.economics;
