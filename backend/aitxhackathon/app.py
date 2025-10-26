@@ -30,16 +30,10 @@ class SubmitRequest(BaseModel):
 # In-memory store for tracking statistics
 stats_store = {
     "correct": {
-        "IMAGE": 10,
-        "AUDIO": 7,
-        "VIDEO": 3,
-        "SIMULATION": 3
-    },
-    "incorrect": {
-        "IMAGE": 10,
-        "AUDIO": 7,
-        "VIDEO": 3,
-        "SIMULATION": 3
+        "IMAGE": 1,
+        "AUDIO": 1,
+        "VIDEO": 1,
+        "SIMULATION": 1
     }
 }
 
@@ -60,12 +54,18 @@ async def submit(request: SubmitRequest):
     Track media type responses and return current statistics.
 
     Accepts JSON with:
-    - type: IMAGE or AUDIO
+    - type: IMAGE, AUDIO, VIDEO, or SIMULATION
     - correct: true or false
+
+    When correct, increments the counter for that media type.
+    When incorrect, decrements the counter (minimum 0).
 
     Returns the current in-memory statistics.
     """
-    category = "correct" if request.correct else "incorrect"
-    stats_store[category][request.type.value] += 1
+    if request.correct:
+        stats_store["correct"][request.type.value] += 1
+    else:
+        # Decrement but ensure it never goes below 0
+        stats_store["correct"][request.type.value] = max(0, stats_store["correct"][request.type.value] - 1)
 
     return stats_store
