@@ -458,16 +458,13 @@ ${text}`;
       };
       const apiFormat = formatMap[submission.format ?? "visual"] ?? "IMAGE";
       
-      // Forward the request to the external API with required fields
+      // Forward the request to the external API with simplified payload
       const externalResponse = await fetch("https://aitxhackathon-production.up.railway.app/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          sectionId: submission.sectionId,
-          score: submission.score,
-          timestamp: submission.timestamp ?? new Date().toISOString(),
           type: apiFormat,
           correct: submission.score === 1,
         }),
