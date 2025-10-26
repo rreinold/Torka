@@ -22,12 +22,15 @@ export function SubmissionRadarChart({ data }: SubmissionRadarChartProps) {
   const radarData = Object.entries(correctData).map(([key, value]) => ({
     subject: key,
     value: typeof value === 'number' ? value : (value ? 100 : 0),
-    fullMark: 100,
   }));
 
   if (radarData.length === 0) {
     return null;
   }
+
+  // Calculate dynamic max range: max value + 20%
+  const maxValue = Math.max(...radarData.map(d => d.value));
+  const maxRange = Math.ceil(maxValue * 1.2);
 
   return (
     <Card className="w-80" data-testid="card-submission-radar">
@@ -44,7 +47,7 @@ export function SubmissionRadarChart({ data }: SubmissionRadarChartProps) {
             />
             <PolarRadiusAxis
               angle={90}
-              domain={[0, 100]}
+              domain={[0, maxRange]}
               tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
             />
             <Radar
