@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
-import { 
-  BookOpen, 
-  Sparkles, 
-  TrendingUp, 
-  Clock, 
-  Target, 
+import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { BookSelectionModal } from "@/components/BookSelectionModal";
+import {
+  BookOpen,
+  Sparkles,
+  TrendingUp,
+  Clock,
+  Target,
   Brain,
   Image,
   Headphones,
@@ -51,6 +53,14 @@ const comprehensionSpeedData = [
 ];
 
 export default function Landing() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [, setLocation] = useLocation();
+
+  const handleSelectBook = (bookId: string) => {
+    setIsModalOpen(false);
+    setLocation(`/reader?book=${bookId}`);
+  };
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -67,11 +77,9 @@ export default function Landing() {
                   Learning Profile
                 </Button>
               </Link>
-              <Link href="/reader">
-                <Button data-testid="button-nav-reader">
-                  Start Reading
-                </Button>
-              </Link>
+              <Button onClick={() => setIsModalOpen(true)} data-testid="button-nav-reader">
+                Start Reading
+              </Button>
             </div>
           </div>
         </div>
@@ -91,12 +99,10 @@ export default function Landing() {
             Torka transforms static textbooks into dynamic, personalized learning experiences with AI-generated media that adapts to how YOU learn best.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/reader">
-              <Button size="lg" data-testid="button-start-journey">
-                Start Your Adaptive Journey
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+            <Button size="lg" onClick={() => setIsModalOpen(true)} data-testid="button-start-journey">
+              Start Your Adaptive Journey
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
             <Button size="lg" variant="outline" data-testid="button-see-demo">
               See Demo
             </Button>
@@ -464,11 +470,9 @@ export default function Landing() {
             Start with our free trial and experience three enhanced chapters. No credit card required.
           </p>
           <div className="flex flex-wrap gap-4 justify-center mb-8">
-            <Link href="/reader">
-              <Button size="lg" data-testid="button-begin-trial">
-                Begin Free Trial
-              </Button>
-            </Link>
+            <Button size="lg" onClick={() => setIsModalOpen(true)} data-testid="button-begin-trial">
+              Begin Free Trial
+            </Button>
             <Button size="lg" variant="outline" data-testid="button-see-demo-2">
               See Demo
             </Button>
@@ -490,6 +494,12 @@ export default function Landing() {
           </p>
         </div>
       </footer>
+
+      <BookSelectionModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSelectBook={handleSelectBook}
+      />
     </div>
   );
 }
