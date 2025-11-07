@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Toolbar } from "@/components/Toolbar";
 import { TextViewer } from "@/components/TextViewer";
 import { Sidebar } from "@/components/Sidebar";
@@ -22,7 +23,16 @@ interface SearchMatch {
 
 export default function Reader() {
   const { toast } = useToast();
-  const [selectedBookId, setSelectedBookId] = useState("economics");
+  const [location] = useLocation();
+
+  // Parse book ID from URL query parameter
+  const getBookIdFromUrl = () => {
+    const params = new URLSearchParams(location.split('?')[1] || '');
+    const bookId = params.get('book');
+    return (bookId && books[bookId]) ? bookId : "economics";
+  };
+
+  const [selectedBookId, setSelectedBookId] = useState(getBookIdFromUrl());
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(100);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -80,6 +90,14 @@ export default function Reader() {
   const totalSearchResults = searchMatches.length;
   const currentSection = currentBook.sections[currentPage - 1];
   const currentRecommendation = currentSection ? recommendations.get(currentSection.id) : undefined;
+
+  // Update book selection when URL changes
+  useEffect(() => {
+    const newBookId = getBookIdFromUrl();
+    if (newBookId !== selectedBookId) {
+      setSelectedBookId(newBookId);
+    }
+  }, [location]);
 
   // Reset state when book changes
   useEffect(() => {
